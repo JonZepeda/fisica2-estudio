@@ -1,0 +1,1175 @@
+# -*- coding: utf-8 -*-
+"""Generador de la página web interactiva para el estudio de Física II"""
+import json
+import os
+
+HTML_TEMPLATE = """<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Física II: Guía Maestra & Solucionario Interactivo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfeff',
+              100: '#cffafe',
+              400: '#22d3ee',
+              500: '#06b6d4',
+              600: '#0891b2',
+              900: '#164e63',
+            },
+            darkbg: '#090d16',
+            cardbg: '#111827',
+            bordercol: '#1f293d',
+          }
+        }
+      }
+    }
+  </script>
+  <!-- KaTeX CSS & JS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="initKaTeX()"></script>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #080c14;
+      color: #f1f5f9;
+    }
+    code, pre, .font-mono {
+      font-family: 'Fira Code', monospace;
+    }
+    .glass-panel {
+      background: rgba(17, 24, 39, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glow-hover:hover {
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
+      border-color: rgba(6, 182, 212, 0.4);
+    }
+    .katex {
+      font-size: 1.08em;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #1f293d;
+      border-radius: 3px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #0891b2;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col custom-scrollbar">
+
+  <!-- TOP NAVIGATION / HERO -->
+  <header class="sticky top-0 z-50 glass-panel border-b border-gray-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 text-white font-black text-xl">
+          <i class="fa-solid fa-atom"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+            Física II <span class="text-xs px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">Examen</span>
+          </h1>
+          <p class="text-xs text-gray-400">Guía Maestra & Solucionario Completo (Semanas 7 – 11)</p>
+        </div>
+      </div>
+
+      <!-- Header actions -->
+      <div class="flex items-center gap-3">
+        <button id="toggleQuizBtn" onclick="toggleQuizMode()" class="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-700 bg-gray-900/80 hover:bg-gray-800 text-gray-300 transition flex items-center gap-2">
+          <i class="fa-solid fa-eye-slash text-cyan-400"></i>
+          <span id="quizBtnText">Modo Estudio (Ocultar Respuestas)</span>
+        </button>
+        <a href="https://github.com/JonZepeda/fisica2-estudio" target="_blank" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 hover:bg-cyan-500/30 transition flex items-center gap-1.5">
+          <i class="fa-brands fa-github text-sm"></i>
+          <span>GitHub</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    
+    <!-- STATS & BADGES -->
+    <section class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="glass-panel p-4 rounded-xl border border-gray-800">
+        <span class="text-xs font-medium text-gray-400 block mb-1">Ejercicios Resueltos</span>
+        <div class="flex items-baseline gap-2">
+          <span class="text-2xl font-black text-cyan-400">75</span>
+          <span class="text-xs text-gray-400">/ 75 ejercicios</span>
+        </div>
+        <div class="w-full bg-gray-800 h-1.5 rounded-full mt-2 overflow-hidden">
+          <div class="bg-cyan-500 h-full w-full"></div>
+        </div>
+      </div>
+
+      <div class="glass-panel p-4 rounded-xl border border-gray-800">
+        <span class="text-xs font-medium text-gray-400 block mb-1">Semanas de Examen</span>
+        <div class="flex items-baseline gap-2">
+          <span class="text-2xl font-black text-purple-400">5</span>
+          <span class="text-xs text-gray-400">S7 a S11</span>
+        </div>
+        <div class="w-full bg-gray-800 h-1.5 rounded-full mt-2 overflow-hidden">
+          <div class="bg-purple-500 h-full w-full"></div>
+        </div>
+      </div>
+
+      <div class="glass-panel p-4 rounded-xl border border-gray-800">
+        <span class="text-xs font-medium text-gray-400 block mb-1">Capítulos Serway</span>
+        <div class="flex items-baseline gap-2">
+          <span class="text-2xl font-black text-emerald-400">3</span>
+          <span class="text-xs text-gray-400">Caps. 24, 25, 26</span>
+        </div>
+        <div class="w-full bg-gray-800 h-1.5 rounded-full mt-2 overflow-hidden">
+          <div class="bg-emerald-500 h-full w-full"></div>
+        </div>
+      </div>
+
+      <div class="glass-panel p-4 rounded-xl border border-gray-800">
+        <span class="text-xs font-medium text-gray-400 block mb-1">Formulario Maestro</span>
+        <div class="flex items-baseline gap-2">
+          <span class="text-2xl font-black text-amber-400">100%</span>
+          <span class="text-xs text-gray-400">Integral & Unidades</span>
+        </div>
+        <div class="w-full bg-gray-800 h-1.5 rounded-full mt-2 overflow-hidden">
+          <div class="bg-amber-500 h-full w-full"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NAVIGATION TABS & FILTERS -->
+    <section class="space-y-4">
+      <!-- Week Tabs -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar">
+        <button onclick="setWeekFilter('all')" id="tab-all" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition bg-cyan-500 text-black shadow-lg shadow-cyan-500/20">
+          <i class="fa-solid fa-list-check mr-1.5"></i> Todos los Problemas (75)
+        </button>
+        <button onclick="setWeekFilter('formulario')" id="tab-formulario" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition bg-gray-900 border border-gray-800 text-gray-300 hover:border-gray-700">
+          <i class="fa-solid fa-calculator mr-1.5 text-amber-400"></i> 📐 Formulario Maestro
+        </button>
+        <button onclick="setWeekFilter(7)" id="tab-7" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition bg-gray-900 border border-gray-800 text-gray-300 hover:border-gray-700">
+          S7: Potencial Eléctrico
+        </button>
+        <button onclick="setWeekFilter(8)" id="tab-8" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition bg-gray-900 border border-gray-800 text-gray-300 hover:border-gray-700">
+          S8: Capacitancia & Dieléctricos
+        </button>
+        <button onclick="setWeekFilter(9)" id="tab-9" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition bg-gray-900 border border-gray-800 text-gray-300 hover:border-gray-700">
+          S9: Circuitos de Capacitores
+        </button>
+        <button onclick="setWeekFilter(10)" id="tab-10" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition bg-gray-900 border border-gray-800 text-gray-300 hover:border-gray-700">
+          S10: Corriente & Resistencia
+        </button>
+        <button onclick="setWeekFilter(11)" id="tab-11" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition bg-gray-900 border border-gray-800 text-gray-300 hover:border-gray-700">
+          S11: Circuitos de Resistores
+        </button>
+      </div>
+
+      <!-- Secondary Filters & Search (Only shown on problems view) -->
+      <div id="filterControls" class="flex flex-col sm:flex-row items-center gap-3 justify-between">
+        <!-- Search -->
+        <div class="relative w-full sm:w-80">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+          <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Buscar por tema, palabra, número..." class="w-full bg-gray-900/90 border border-gray-800 rounded-xl pl-9 pr-4 py-2 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-cyan-500 transition">
+        </div>
+
+        <!-- Category pills -->
+        <div class="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1">
+          <span class="text-xs text-gray-500 hidden sm:inline">Categoría:</span>
+          <button onclick="setCatFilter('all')" id="cat-all" class="cat-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-cyan-900/40 text-cyan-300 border border-cyan-700/50">
+            Todas
+          </button>
+          <button onclick="setCatFilter('Análisis y Lógica')" id="cat-logica" class="cat-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-900 text-gray-400 border border-gray-800 hover:border-gray-700">
+            🧠 Análisis y Lógica
+          </button>
+          <button onclick="setCatFilter('Desarrollo Matemático')" id="cat-mate" class="cat-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-900 text-gray-400 border border-gray-800 hover:border-gray-700">
+            📐 Matemático
+          </button>
+          <button onclick="setCatFilter('Aplicación')" id="cat-app" class="cat-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-900 text-gray-400 border border-gray-800 hover:border-gray-700">
+            ⚡ Aplicación
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- FORMULARIO MAESTRO SECTION (Toggled when 'formulario' is active) -->
+    <section id="formularioSection" class="hidden space-y-6">
+      <div class="glass-panel p-6 rounded-2xl border border-cyan-900/30">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+              <i class="fa-solid fa-scroll"></i>
+            </span>
+            <h2 class="text-xl font-bold text-white">Formulario Maestro de Física II</h2>
+          </div>
+          <span class="text-xs text-gray-400">Ecuaciones, Unidades SI y Condiciones</span>
+        </div>
+        <p class="text-xs text-gray-400 leading-relaxed">
+          Recopilación oficial y completa de todas las fórmulas de los capítulos 24, 25 y 26 del Serway-Jewett necesarias para resolver cualquier examen de Electromagnetismo y Circuitos.
+        </p>
+      </div>
+
+      <!-- Formulas Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Constantes -->
+        <div class="glass-panel p-5 rounded-xl border border-gray-800 space-y-3">
+          <h3 class="text-sm font-bold text-cyan-400 flex items-center gap-2">
+            <i class="fa-solid fa-sliders"></i> Constantes Fundamentales
+          </h3>
+          <ul class="text-xs space-y-2 text-gray-300">
+            <li class="flex justify-between py-1 border-b border-gray-800">
+              <span>Constante de Coulomb:</span>
+              <span class="font-mono text-cyan-300">$k_e = 8.988 \times 10^9 \text{ N}\cdot\text{m}^2/\text{C}^2$</span>
+            </li>
+            <li class="flex justify-between py-1 border-b border-gray-800">
+              <span>Permitividad del vacío:</span>
+              <span class="font-mono text-cyan-300">$\epsilon_0 = 8.854 \times 10^{-12} \text{ F/m}$</span>
+            </li>
+            <li class="flex justify-between py-1 border-b border-gray-800">
+              <span>Carga del electrón / protón:</span>
+              <span class="font-mono text-cyan-300">$e = 1.602 \times 10^{-19} \text{ C}$</span>
+            </li>
+            <li class="flex justify-between py-1 border-b border-gray-800">
+              <span>Masa del protón:</span>
+              <span class="font-mono text-cyan-300">$m_p = 1.673 \times 10^{-27} \text{ kg}$</span>
+            </li>
+            <li class="flex justify-between py-1">
+              <span>Equivalencia de energía:</span>
+              <span class="font-mono text-cyan-300">$1\text{ kWh} = 3.60 \times 10^6\text{ J}$</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Potencial Eléctrico -->
+        <div class="glass-panel p-5 rounded-xl border border-gray-800 space-y-3">
+          <h3 class="text-sm font-bold text-cyan-400 flex items-center gap-2">
+            <i class="fa-solid fa-bolt"></i> Potencial Eléctrico (Semana 7)
+          </h3>
+          <ul class="text-xs space-y-2 text-gray-300">
+            <li class="py-1 border-b border-gray-800">
+              <span class="text-gray-400">Diferencia de Potencial General:</span>
+              <div class="text-center font-mono my-1 text-cyan-200">$\Delta V = -\int_A^B \vec{E} \cdot d\vec{s} = \frac{\Delta U}{q}$</div>
+            </li>
+            <li class="py-1 border-b border-gray-800">
+              <span class="text-gray-400">Campo Eléctrico a partir de $V$:</span>
+              <div class="text-center font-mono my-1 text-cyan-200">$\vec{E} = -\nabla V = -\left(\frac{\partial V}{\partial x}\hat{i} + \frac{\partial V}{\partial y}\hat{j} + \frac{\partial V}{\partial z}\hat{k}\right)$</div>
+            </li>
+            <li class="py-1 border-b border-gray-800">
+              <span class="text-gray-400">Carga Puntual & Superposición:</span>
+              <div class="text-center font-mono my-1 text-cyan-200">$V = k_e \frac{q}{r}, \quad V_{\text{total}} = k_e \sum \frac{q_i}{r_i}$</div>
+            </li>
+            <li class="py-1">
+              <span class="text-gray-400">Anillo Axial & Varilla Axial:</span>
+              <div class="text-center font-mono my-1 text-cyan-200">$V_{\text{anillo}} = \frac{k_e Q}{\sqrt{R^2 + x^2}}, \quad V_{\text{varilla}} = k_e \lambda \ln\left(\frac{L+d}{d}\right)$</div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Capacitancia -->
+        <div class="glass-panel p-5 rounded-xl border border-gray-800 space-y-3">
+          <h3 class="text-sm font-bold text-cyan-400 flex items-center gap-2">
+            <i class="fa-solid fa-layer-group"></i> Capacitancia & Dieléctricos (Semanas 8 & 9)
+          </h3>
+          <ul class="text-xs space-y-2 text-gray-300">
+            <li class="py-1 border-b border-gray-800">
+              <span class="text-gray-400">Definición y Placas Paralelas:</span>
+              <div class="text-center font-mono my-1 text-cyan-200">$C = \frac{Q}{\Delta V}, \quad C_0 = \frac{\epsilon_0 A}{d}, \quad C = \kappa C_0$</div>
+            </li>
+            <li class="py-1 border-b border-gray-800">
+              <span class="text-gray-400">Cilíndrico & Esférico:</span>
+              <div class="text-center font-mono my-1 text-cyan-200">$C_{\text{cil}} = \frac{2\pi \kappa \epsilon_0 L}{\ln(b/a)}, \quad C_{\text{esf}} = \frac{a b}{k_e (b - a)}$</div>
+            </li>
+            <li class="py-1 border-b border-gray-800">
+              <span class="text-gray-400">Energía Almacenada:</span>
+              <div class="text-center font-mono my-1 text-cyan-200">$U = \frac{1}{2} C (\Delta V)^2 = \frac{Q^2}{2C} = \frac{1}{2} Q \Delta V$</div>
+            </li>
+            <li class="py-1">
+              <span class="text-gray-400">Combinaciones Serie & Paralelo:</span>
+              <div class="text-center font-mono my-1 text-cyan-200">$C_{\text{paralelo}} = \sum C_i, \quad \frac{1}{C_{\text{serie}}} = \sum \frac{1}{C_i}$</div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Corriente & Resistencia -->
+        <div class="glass-panel p-5 rounded-xl border border-gray-800 space-y-3">
+          <h3 class="text-sm font-bold text-cyan-400 flex items-center gap-2">
+            <i class="fa-solid fa-wave-square"></i> Corriente & Circuitos de Resistores (Semanas 10 & 11)
+          </h3>
+          <ul class="text-xs space-y-2 text-gray-300">
+            <li class="py-1 border-b border-gray-800">
+              <span class="text-gray-400">Corriente & Deriva de Carga:</span>
+              <div class="text-center font-mono my-1 text-cyan-200">$I = \frac{dQ}{dt}, \quad J = \frac{I}{A} = n q v_d$</div>
+            </li>
+            <li class="py-1 border-b border-gray-800">
+              <span class="text-gray-400">Resistencia & Efecto Térmico:</span>
+              <div class="text-center font-mono my-1 text-cyan-200">$R = \rho \frac{\ell}{A}, \quad R(T) = R_0 [1 + \alpha (T - T_0)]$</div>
+            </li>
+            <li class="py-1 border-b border-gray-800">
+              <span class="text-gray-400">Potencia Eléctrica (Joule):</span>
+              <div class="text-center font-mono my-1 text-cyan-200">$P = V \cdot I = I^2 R = \frac{V^2}{R}$</div>
+            </li>
+            <li class="py-1">
+              <span class="text-gray-400">Divisor de Tensión & Combinaciones:</span>
+              <div class="text-center font-mono my-1 text-cyan-200">$R_{\text{serie}} = \sum R_i, \quad \frac{1}{R_{\text{paralelo}}} = \sum \frac{1}{R_i}, \quad V_k = V_{\text{tot}}\left(\frac{R_k}{R_{\text{eq}}}\right)$</div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Tabla Comparativa -->
+      <div class="glass-panel p-6 rounded-xl border border-gray-800 overflow-x-auto">
+        <h3 class="text-base font-bold text-white mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-table-columns text-cyan-400"></i> Tabla Comparativa: Capacitores vs. Resistores
+        </h3>
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="border-b border-gray-700 text-gray-400 bg-gray-900/60">
+              <th class="p-3">Característica</th>
+              <th class="p-3 text-cyan-300">Capacitores ($C$)</th>
+              <th class="p-3 text-purple-300">Resistores ($R$)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-800/60 text-gray-300 font-mono">
+            <tr>
+              <td class="p-3 font-sans font-medium text-gray-400">Ley Fundamental</td>
+              <td class="p-3 text-cyan-300">$Q = C \Delta V$</td>
+              <td class="p-3 text-purple-300">$\Delta V = I R$</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-sans font-medium text-gray-400">Conexión en Serie</td>
+              <td class="p-3 text-cyan-300">Carga igual ($Q_1=Q_2$)<br>$\frac{1}{C_{\text{eq}}} = \sum \frac{1}{C_i}$ ($C_{\text{eq}}$ disminuye)</td>
+              <td class="p-3 text-purple-300">Corriente igual ($I_1=I_2$)<br>$R_{\text{eq}} = \sum R_i$ ($R_{\text{eq}}$ aumenta)</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-sans font-medium text-gray-400">Conexión en Paralelo</td>
+              <td class="p-3 text-cyan-300">Voltaje igual ($\Delta V_1=\Delta V_2$)<br>$C_{\text{eq}} = \sum C_i$ ($C_{\text{eq}}$ aumenta)</td>
+              <td class="p-3 text-purple-300">Voltaje igual ($\Delta V_1=\Delta V_2$)<br>$\frac{1}{R_{\text{eq}}} = \sum \frac{1}{R_i}$ ($R_{\text{eq}}$ disminuye)</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-sans font-medium text-gray-400">Falla en Circuito Abierto</td>
+              <td class="p-3 text-cyan-300">$C_{\text{eq}} = 0\text{ F}$ (en serie)</td>
+              <td class="p-3 text-purple-300">Corriente se corta ($I = 0\text{ A}$ en serie)</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-sans font-medium text-gray-400">Potencia / Energía</td>
+              <td class="p-3 text-cyan-300">Almacena energía: $U = \frac{1}{2} C V^2$</td>
+              <td class="p-3 text-purple-300">Disipa calor: $P = \frac{V^2}{R} = I^2 R$</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PROBLEMS CONTAINER -->
+    <section id="problemsSection" class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 id="sectionHeading" class="text-sm font-semibold uppercase tracking-wider text-gray-400">
+          Mostrando todos los problemas (<span id="resultsCount">75</span>)
+        </h2>
+        <span class="text-xs text-cyan-400 font-medium cursor-pointer hover:underline" onclick="expandAllSolutions()">
+          <i class="fa-solid fa-chevron-down mr-1"></i> Expandir todas
+        </span>
+      </div>
+
+      <div id="cardsList" class="space-y-4">
+        <!-- Injected dynamically via JS -->
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="glass-panel border-t border-gray-800/80 mt-12 py-6 text-center text-xs text-gray-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <p>Física II &copy; 2026 &bull; Material de Estudio & Solucionario Maestro para Jonathan Zepeda</p>
+      <p class="text-gray-400">Basado en Serway-Jewett &bull; Física para Ciencias e Ingeniería</p>
+    </div>
+  </footer>
+
+  <!-- SCRIPT DATA & APP LOGIC -->
+  <script>
+    const PROBLEMS = __PROBLEMS_DATA_PLACEHOLDER__;
+
+    let currentWeek = 'all';
+    let currentCat = 'all';
+    let quizMode = false;
+
+    function initKaTeX() {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+        ],
+        throwOnError: false
+      });
+    }
+
+    function setWeekFilter(week) {
+      currentWeek = week;
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-cyan-500', 'text-black', 'shadow-lg', 'shadow-cyan-500/20');
+        btn.classList.add('bg-gray-900', 'text-gray-300', 'border-gray-800');
+      });
+
+      const activeBtn = document.getElementById(`tab-${week}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-gray-900', 'text-gray-300', 'border-gray-800');
+        activeBtn.classList.add('bg-cyan-500', 'text-black', 'shadow-lg', 'shadow-cyan-500/20');
+      }
+
+      if (week === 'formulario') {
+        document.getElementById('formularioSection').classList.remove('hidden');
+        document.getElementById('problemsSection').classList.add('hidden');
+        document.getElementById('filterControls').classList.add('hidden');
+      } else {
+        document.getElementById('formularioSection').classList.add('hidden');
+        document.getElementById('problemsSection').classList.remove('hidden');
+        document.getElementById('filterControls').classList.remove('hidden');
+        applyFilters();
+      }
+    }
+
+    function setCatFilter(cat) {
+      currentCat = cat;
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        btn.classList.remove('bg-cyan-900/40', 'text-cyan-300', 'border-cyan-700/50');
+        btn.classList.add('bg-gray-900', 'text-gray-400', 'border-gray-800');
+      });
+
+      let id = 'cat-all';
+      if (cat === 'Análisis y Lógica') id = 'cat-logica';
+      if (cat === 'Desarrollo Matemático') id = 'cat-mate';
+      if (cat === 'Aplicación') id = 'cat-app';
+
+      const btn = document.getElementById(id);
+      if (btn) {
+        btn.classList.remove('bg-gray-900', 'text-gray-400', 'border-gray-800');
+        btn.classList.add('bg-cyan-900/40', 'text-cyan-300', 'border-cyan-700/50');
+      }
+      applyFilters();
+    }
+
+    function toggleQuizMode() {
+      quizMode = !quizMode;
+      const btn = document.getElementById('toggleQuizBtn');
+      const txt = document.getElementById('quizBtnText');
+      if (quizMode) {
+        btn.classList.remove('bg-gray-900/80', 'text-gray-300');
+        btn.classList.add('bg-cyan-500', 'text-black', 'font-bold');
+        txt.textContent = 'Modo Estudio Activo (Respuestas Ocultas)';
+        document.querySelectorAll('.solution-content').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.quiz-reveal-btn').forEach(el => el.classList.remove('hidden'));
+      } else {
+        btn.classList.remove('bg-cyan-500', 'text-black', 'font-bold');
+        btn.classList.add('bg-gray-900/80', 'text-gray-300');
+        txt.textContent = 'Modo Estudio (Ocultar Respuestas)';
+        document.querySelectorAll('.solution-content').forEach(el => el.classList.remove('hidden'));
+        document.querySelectorAll('.quiz-reveal-btn').forEach(el => el.classList.add('hidden'));
+      }
+    }
+
+    function revealSolution(id) {
+      const sol = document.getElementById(`sol-${id}`);
+      const btn = document.getElementById(`btn-rev-${id}`);
+      if (sol) sol.classList.remove('hidden');
+      if (btn) btn.classList.add('hidden');
+    }
+
+    function expandAllSolutions() {
+      document.querySelectorAll('.solution-content').forEach(el => el.classList.remove('hidden'));
+      document.querySelectorAll('.quiz-reveal-btn').forEach(el => el.classList.add('hidden'));
+    }
+
+    function applyFilters() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const list = document.getElementById('cardsList');
+      list.innerHTML = '';
+
+      let count = 0;
+
+      PROBLEMS.forEach(item => {
+        const matchWeek = (currentWeek === 'all' || item.semana == currentWeek);
+        const matchCat = (currentCat === 'all' || item.categoria === currentCat);
+        const matchSearch = (!q || 
+          item.pregunta.toLowerCase().includes(q) || 
+          item.resultado.toLowerCase().includes(q) ||
+          item.semanaTitle.toLowerCase().includes(q) ||
+          `problema ${item.numero}`.includes(q) ||
+          item.id.includes(q)
+        );
+
+        if (matchWeek && matchCat && matchSearch) {
+          count++;
+          const card = document.createElement('div');
+          card.className = "glass-panel rounded-xl p-5 border border-gray-800/80 glow-hover transition space-y-4";
+          
+          let catBadgeClass = "bg-blue-500/10 text-blue-400 border-blue-500/20";
+          if (item.categoria === 'Desarrollo Matemático') catBadgeClass = "bg-amber-500/10 text-amber-400 border-amber-500/20";
+          if (item.categoria === 'Aplicación') catBadgeClass = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+
+          card.innerHTML = `
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs font-bold px-2 py-0.5 rounded bg-gray-800 text-gray-300 font-mono">
+                  S${item.semana} &bull; Ejercicio ${item.numero}
+                </span>
+                <span class="text-xs px-2.5 py-0.5 rounded-full border ${catBadgeClass} font-medium">
+                  ${item.categoria}
+                </span>
+                <span class="text-xs text-gray-500">
+                  ${item.semanaTitle}
+                </span>
+              </div>
+              <button onclick="copyProblem('${item.id}')" title="Copiar problema y respuesta" class="text-gray-500 hover:text-cyan-400 text-xs p-1">
+                <i class="fa-regular fa-copy" id="copy-icon-${item.id}"></i>
+              </button>
+            </div>
+
+            <!-- PREGUNTA -->
+            <div class="text-sm font-medium text-gray-100 leading-relaxed">
+              ${item.pregunta}
+            </div>
+
+            <!-- REVEAL BUTTON FOR QUIZ MODE -->
+            <div id="btn-rev-${item.id}" class="quiz-reveal-btn ${quizMode ? '' : 'hidden'}">
+              <button onclick="revealSolution('${item.id}')" class="w-full py-2.5 px-4 rounded-xl bg-gray-900 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 text-xs font-semibold flex items-center justify-center gap-2 transition">
+                <i class="fa-solid fa-lightbulb"></i> Ver Solución y Procedimiento
+              </button>
+            </div>
+
+            <!-- SOLUCION / DESARROLLO -->
+            <div id="sol-${item.id}" class="solution-content ${quizMode ? 'hidden' : ''} space-y-3 pt-3 border-t border-gray-800/80">
+              ${item.formula ? `
+                <div class="p-2.5 rounded-lg bg-gray-900/90 border border-gray-800/80 flex items-center gap-3">
+                  <span class="text-xs text-cyan-400 font-medium flex items-center gap-1.5"><i class="fa-solid fa-square-root-variable"></i> Fórmula:</span>
+                  <div class="text-xs font-mono text-cyan-200 overflow-x-auto">${item.formula}</div>
+                </div>
+              ` : ''}
+
+              <div class="text-xs text-gray-300 space-y-2 leading-relaxed">
+                ${item.desarrollo}
+              </div>
+
+              <!-- CAJA RESULTADO DESTACADO -->
+              <div class="p-3 rounded-lg bg-gradient-to-r from-cyan-950/40 to-emerald-950/30 border border-cyan-500/30 flex items-baseline justify-between gap-3 flex-wrap">
+                <span class="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
+                  <i class="fa-solid fa-circle-check text-emerald-400"></i> Resultado Oficial:
+                </span>
+                <span class="text-sm font-bold font-mono text-emerald-300">
+                  ${item.resultado}
+                </span>
+              </div>
+            </div>
+          `;
+          list.appendChild(card);
+        }
+      });
+
+      document.getElementById('resultsCount').textContent = count;
+      if (window.renderMathInElement) {
+        initKaTeX();
+      }
+    }
+
+    function copyProblem(id) {
+      const item = PROBLEMS.find(p => p.id === id);
+      if (!item) return;
+      const cleanText = `[Semana ${item.semana} - Ejercicio ${item.numero}] (${item.categoria})\nPregunta: ${item.pregunta}\nResultado: ${item.resultado}`;
+      navigator.clipboard.writeText(cleanText).then(() => {
+        const icon = document.getElementById(`copy-icon-${id}`);
+        if (icon) {
+          icon.className = "fa-solid fa-check text-emerald-400";
+          setTimeout(() => {
+            icon.className = "fa-regular fa-copy";
+          }, 2000);
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      applyFilters();
+    });
+  </script>
+</body>
+</html>
+"""
+
+def get_all_problems():
+    # Cargar los 75 ejercicios
+    import math
+    
+    problems = [
+        # ==================== SEMANA 7 ====================
+        {
+            "id": "s7_1", "semana": 7, "semanaTitle": "Potencial Eléctrico", "categoria": "Análisis y Lógica", "numero": 1,
+            "pregunta": "Si el potencial eléctrico es constante en una región del espacio, ¿qué se puede afirmar sobre el campo eléctrico en esa misma región? Explique.",
+            "formula": r"$\vec{E} = -\nabla V = -\left(\frac{\partial V}{\partial x}\hat{i} + \frac{\partial V}{\partial y}\hat{j} + \frac{\partial V}{\partial z}\hat{k}\right)$",
+            "desarrollo": "El campo eléctrico es el gradiente negativo del potencial eléctrico. Si el potencial eléctrico es constante en toda una región, sus derivadas espaciales respecto a cualquier dirección son exactamente cero. Por tanto, no existe diferencia de potencial entre ningún par de puntos y el campo eléctrico neto en toda la región es nulo.",
+            "resultado": r"$\vec{E} = 0 \text{ N/C}$ (El campo eléctrico es idénticamente nulo)"
+        },
+        {
+            "id": "s7_2", "semana": 7, "semanaTitle": "Potencial Eléctrico", "categoria": "Análisis y Lógica", "numero": 2,
+            "pregunta": "Dos cargas puntuales de igual magnitud pero signos opuestos están separadas por una distancia $d$. ¿Existe algún punto en la línea que las une donde el potencial sea cero pero el campo eléctrico no lo sea? Justifique.",
+            "formula": r"$V = k_e \left(\frac{+q}{r_1} + \frac{-q}{r_2}\right), \quad \vec{E}_{\text{neto}} = \vec{E}_+ + \vec{E}_-$",
+            "desarrollo": "Sí, en el <strong>punto medio</strong> exacto entre ambas cargas (a distancia $d/2$ de cada una). En este punto:<br>&bull; Potencial: $V = k_e \frac{q}{d/2} + k_e \frac{-q}{d/2} = 0\text{ V}$.<br>&bull; Campo eléctrico: Ambos campos apuntan hacia la carga negativa (el de $+q$ repele alejándose y el de $-q$ atrae en la misma dirección). Se suman vectorialmente: $E = k_e \frac{q}{(d/2)^2} + k_e \frac{q}{(d/2)^2} = \frac{8k_e q}{d^2} \neq 0$.",
+            "resultado": r"Sí, en el punto medio exacto ($V = 0\text{ V}$, $E = \frac{8k_e q}{d^2} \neq 0$)"
+        },
+        {
+            "id": "s7_3", "semana": 7, "semanaTitle": "Potencial Eléctrico", "categoria": "Análisis y Lógica", "numero": 3,
+            "pregunta": "Al moverse en la dirección de las líneas de campo eléctrico, ¿el potencial eléctrico aumenta, disminuye o se mantiene igual?",
+            "formula": r"$\Delta V = V_B - V_A = -\int_A^B \vec{E} \cdot d\vec{s}$",
+            "desarrollo": "<strong>Disminuye</strong>. Por definición, la diferencia de potencial contiene un signo negativo respecto a la integral de línea del campo eléctrico. Al desplazarse en el mismo sentido que $\vec{E}$, el producto punto $\vec{E} \cdot d\vec{s}$ es positivo, lo que hace que $\Delta V < 0$ ($V_f < V_i$). Las líneas de campo siempre apuntan hacia la región de menor potencial eléctrico.",
+            "resultado": "Disminuye"
+        },
+        {
+            "id": "s7_4", "semana": 7, "semanaTitle": "Potencial Eléctrico", "categoria": "Análisis y Lógica", "numero": 4,
+            "pregunta": "Explique por qué la superficie de un conductor cargado en equilibrio electrostático es siempre una superficie equipotencial.",
+            "formula": r"$\Delta V = -\int_A^B E_t ds = 0 \implies V_A = V_B$",
+            "desarrollo": "En equilibrio electrostático, el campo eléctrico en el interior de un conductor es cero y en la superficie debe ser estrictamente perpendicular a ella en cada punto. Si existiera una componente tangencial $E_t \neq 0$, los electrones libres de la superficie experimentarían una fuerza eléctrica $F_t = -e E_t$ y se moverían a lo largo del conductor, contradiciendo la definición de equilibrio electrostático. Como $E_t = 0$, mover una carga a lo largo de la superficie no requiere trabajo, por lo que todos los puntos de la superficie tienen el mismo potencial.",
+            "resultado": "Porque el campo tangencial es nulo ($E_t = 0$); toda la superficie está al mismo potencial"
+        },
+        {
+            "id": "s7_5", "semana": 7, "semanaTitle": "Potencial Eléctrico", "categoria": "Análisis y Lógica", "numero": 5,
+            "pregunta": "Si una distribución de carga continua tiene simetría esférica, ¿cómo varía el potencial eléctrico fuera de la distribución en comparación con una carga puntual?",
+            "formula": r"$V(r) = -\int_\infty^r E(r') dr' = k_e \frac{Q}{r}$",
+            "desarrollo": "Varía de forma <strong>completamente idéntica</strong>. Por la ley de Gauss, el campo eléctrico exterior a cualquier distribución con simetría esférica de carga total $Q$ es exactamente $E = k_e \frac{Q}{r^2}$. Al calcular la diferencia de potencial respecto al infinito ($V_\infty = 0$), se obtiene la misma relación $V(r) = k_e \frac{Q}{r}$ que para una carga puntual concentrada en el centro.",
+            "resultado": r"Varía exactamente igual que el de una carga puntual ($V = k_e Q / r$)"
+        },
+        {
+            "id": "s7_6", "semana": 7, "semanaTitle": "Potencial Eléctrico", "categoria": "Desarrollo Matemático", "numero": 6,
+            "pregunta": "Datos: Dos cargas puntuales $q_1 = +3.0\ \mu\text{C}$ en $(0, 3)\text{ m}$ y $q_2 = -4.0\ \mu\text{C}$ en $(4, 0)\text{ m}$. Calcule el potencial eléctrico total en el origen $(0,0)$.",
+            "formula": r"$V = k_e \left(\frac{q_1}{r_1} + \frac{q_2}{r_2}\right)$",
+            "desarrollo": r"Distancias al origen:<br>$r_1 = \sqrt{0^2 + 3^2} = 3.0\text{ m}$<br>$r_2 = \sqrt{4^2 + 0^2} = 4.0\text{ m}$<br><br>Sustituyendo:<br>$V = 8.988 \times 10^9 \left( \frac{3.0 \times 10^{-6}}{3.0} + \frac{-4.0 \times 10^{-6}}{4.0} \right) = 8.988 \times 10^9 (1.0 \times 10^{-6} - 1.0 \times 10^{-6}) = 0.00\text{ V}$.",
+            "resultado": "0.00 V"
+        },
+        {
+            "id": "s7_7", "semana": 7, "semanaTitle": "Potencial Eléctrico", "categoria": "Desarrollo Matemático", "numero": 7,
+            "pregunta": "Datos: Una carga $q = +5.0\text{ nC}$ se mueve desde un punto con $V_A = 100\text{ V}$ hasta un punto con $V_B = 250\text{ V}$. Calcule el trabajo realizado por el campo eléctrico.",
+            "formula": r"$W_{\text{campo}} = -\Delta U = -q (V_B - V_A)$",
+            "desarrollo": r"El trabajo realizado por el campo es el opuesto de la variación de energía potencial electrostática:<br>$W_{\text{campo}} = -(5.0 \times 10^{-9}\text{ C})(250\text{ V} - 100\text{ V}) = -(5.0 \times 10^{-9}\text{ C})(150\text{ V}) = -7.50 \times 10^{-7}\text{ J}$.",
+            "resultado": r"$-7.50 \times 10^{-7}\text{ J} = -0.75\ \mu\text{J}$"
+        },
+        {
+            "id": "s7_8", "semana": 7, "semanaTitle": "Potencial Eléctrico", "categoria": "Desarrollo Matemático", "numero": 8,
+            "pregunta": "Datos: Un anillo de radio $R = 0.5\text{ m}$ tiene una carga total $Q = +12\ \mu\text{C}$ distribuida uniformemente. Deduzca y calcule el potencial en un punto sobre el eje del anillo a una distancia $x = 1.2\text{ m}$ de su centro.",
+            "formula": r"$V = k_e \int \frac{dq}{\sqrt{R^2 + x^2}} = \frac{k_e Q}{\sqrt{R^2 + x^2}}$",
+            "desarrollo": r"<strong>Deducción:</strong> Cada elemento $dq$ está a distancia $r = \sqrt{R^2 + x^2}$ del punto axial $P$. Como $R$ y $x$ son constantes, salen de la integral: $V = \frac{k_e}{\sqrt{R^2 + x^2}} \int dq = \frac{k_e Q}{\sqrt{R^2 + x^2}}$.<br><br><strong>Cálculo:</strong><br>$r = \sqrt{0.5^2 + 1.2^2} = \sqrt{0.25 + 1.44} = \sqrt{1.69} = 1.30\text{ m}$.<br>$V = \frac{(8.988 \times 10^9)(12.0 \times 10^{-6})}{1.30} = \frac{107856}{1.30} \approx 82,966\text{ V}$.",
+            "resultado": r"$82.97\text{ kV} \ (82,966\text{ V})$"
+        },
+        {
+            "id": "s7_9", "semana": 7, "semanaTitle": "Potencial Eléctrico", "categoria": "Desarrollo Matemático", "numero": 9,
+            "pregunta": "Datos: El potencial eléctrico en una región está dado por $V(x, y) = 3x^2y - 5x$. Encuentre la expresión para el vector campo eléctrico $\vec{E}$ en el punto $(1, 2)\text{ m}$.",
+            "formula": r"$E_x = -\frac{\partial V}{\partial x}, \quad E_y = -\frac{\partial V}{\partial y}$",
+            "desarrollo": r"Derivadas parciales:<br>$E_x = -\frac{\partial}{\partial x}(3x^2y - 5x) = -(6xy - 5) = -6xy + 5$<br>$E_y = -\frac{\partial}{\partial y}(3x^2y - 5x) = -3x^2$<br><br>Evaluando en $(x=1, y=2)$:<br>$E_x = -6(1)(2) + 5 = -12 + 5 = -7.0\text{ V/m}$<br>$E_y = -3(1)^2 = -3.0\text{ V/m}$<br>Magnitud: $|\vec{E}| = \sqrt{(-7)^2 + (-3)^2} = \sqrt{58} \approx 7.62\text{ V/m}$.",
+            "resultado": r"$\vec{E}(1,2) = (-7.0\hat{i} - 3.0\hat{j})\text{ V/m}, \quad |\vec{E}| = 7.62\text{ V/m}$"
+        },
+        {
+            "id": "s7_10", "semana": 7, "semanaTitle": "Potencial Eléctrico", "categoria": "Desarrollo Matemático", "numero": 10,
+            "pregunta": "Datos: Una varilla delgada de longitud $L = 2.0\text{ m}$ tiene una densidad de carga lineal uniforme $\lambda = +4.0\ \mu\text{C/m}$. Calcule el potencial en un punto a una distancia $d = 0.5\text{ m}$ de uno de sus extremos, a lo largo de su eje.",
+            "formula": r"$V = k_e \int_d^{d+L} \frac{\lambda dx}{x} = k_e \lambda \ln\left(\frac{d+L}{d}\right)$",
+            "desarrollo": r"La varilla se ubica a lo largo del eje $x$ desde $x = d = 0.5\text{ m}$ hasta $x = d+L = 2.5\text{ m}$ con el punto de observación en el origen $x = 0$.<br>La razón es $\frac{d+L}{d} = \frac{0.5 + 2.0}{0.5} = \frac{2.5}{0.5} = 5.0$.<br>$V = (8.988 \times 10^9)(4.0 \times 10^{-6})\ln(5.0) = 35952 \times 1.60944 \approx 57,862\text{ V}$.",
+            "resultado": r"$57.86\text{ kV} \ (57,862\text{ V})$"
+        },
+        {
+            "id": "s7_11", "semana": 7, "semanaTitle": "Potencial Eléctrico", "categoria": "Aplicación", "numero": 11,
+            "pregunta": "Datos: Un acelerador de partículas somete a un protón ($q = 1.6 \times 10^{-19}\text{ C}, m = 1.67 \times 10^{-27}\text{ kg}$) desde el reposo a una diferencia de potencial de $15,000\text{ V}$. Calcule la velocidad final del protón.",
+            "formula": r"$\Delta K + \Delta U = 0 \implies \frac{1}{2}mv^2 = q\Delta V \implies v = \sqrt{\frac{2q\Delta V}{m}}$",
+            "desarrollo": r"Sustituyendo los datos:<br>$v = \sqrt{\frac{2(1.60 \times 10^{-19}\text{ C})(15000\text{ V})}{1.67 \times 10^{-27}\text{ kg}}} = \sqrt{\frac{4.80 \times 10^{-15}}{1.67 \times 10^{-27}}} = \sqrt{2.874 \times 10^{12}} \approx 1.70 \times 10^6\text{ m/s}$.",
+            "resultado": r"$1.70 \times 10^6\text{ m/s} \ (1,695\text{ km/s})$"
+        },
+        {
+            "id": "s7_12", "semana": 7, "semanaTitle": "Potencial Eléctrico", "categoria": "Aplicación", "numero": 12,
+            "pregunta": "Datos: Una esfera conductora de un generador Van de Graaff tiene un radio $R = 0.15\text{ m}$ y el aire se ioniza si el campo eléctrico excede $3.0 \times 10^6\text{ V/m}$. Calcule el potencial máximo que puede alcanzar la esfera.",
+            "formula": r"$V_{\text{máx}} = E_{\text{máx}} \cdot R$",
+            "desarrollo": r"En la superficie de una esfera conductora: $E = \frac{k_e Q}{R^2}$ y $V = \frac{k_e Q}{R}$. Por lo tanto, $V = E \cdot R$.<br>$V_{\text{máx}} = (3.0 \times 10^6\text{ V/m})(0.15\text{ m}) = 450,000\text{ V}$.",
+            "resultado": r"$450\text{ kV} \ (4.50 \times 10^5\text{ V})$"
+        },
+        {
+            "id": "s7_13", "semana": 7, "semanaTitle": "Potencial Eléctrico", "categoria": "Aplicación", "numero": 13,
+            "pregunta": "Datos: En un tubo de rayos catódicos analógico, dos placas separadas por $2.0\text{ cm}$ tienen una diferencia de potencial de $400\text{ V}$. Determine el módulo del campo eléctrico uniforme entre ellas.",
+            "formula": r"$E = \frac{\Delta V}{d}$",
+            "desarrollo": r"Distancia en metros: $d = 2.0\text{ cm} = 0.02\text{ m}$.<br>$E = \frac{400\text{ V}}{0.02\text{ m}} = 20,000\text{ V/m} = 2.0 \times 10^4\text{ V/m}$.",
+            "resultado": r"$20,000\text{ V/m} \ (2.0 \times 10^4\text{ V/m})$"
+        },
+        {
+            "id": "s7_14", "semana": 7, "semanaTitle": "Potencial Eléctrico", "categoria": "Aplicación", "numero": 14,
+            "pregunta": "Datos: Un sistema de blindaje industrial requiere una esfera conductora hueca con radio interno $R_1 = 10\text{ cm}$ y externo $R_2 = 15\text{ cm}$. Si se introduce una carga central de $2.0\ \mu\text{C}$, determine el potencial en la superficie exterior.",
+            "formula": r"$V(R_2) = \frac{k_e q}{R_2}$",
+            "desarrollo": r"La carga central induce $-q$ en la superficie interna y $+q$ en la superficie externa. Para todo punto $r \ge R_2$, el campo eléctrico gaussiano es idéntico al de una carga puntual $+q$ en el origen. Tomando $V(\infty) = 0$:<br>$V(R_2) = \frac{(8.988 \times 10^9)(2.0 \times 10^{-6}\text{ C})}{0.15\text{ m}} = \frac{17976}{0.15} \approx 119,840\text{ V}$.",
+            "resultado": r"$120\text{ kV} \ (119,840\text{ V})$"
+        },
+        {
+            "id": "s7_15", "semana": 7, "semanaTitle": "Potencial Eléctrico", "categoria": "Aplicación", "numero": 15,
+            "pregunta": "Datos: Para evitar descargas electrostáticas en una línea de ensamblaje microelectrónico, el potencial no debe superar los $50\text{ V}$ a $10\text{ cm}$ de un componente. Si el componente se modela como carga puntual, determine su carga máxima permitida.",
+            "formula": r"$V = \frac{k_e q_{\text{máx}}}{r} \implies q_{\text{máx}} = \frac{V r}{k_e}$",
+            "desarrollo": r"Distancia: $r = 10\text{ cm} = 0.10\text{ m}$.<br>$q_{\text{máx}} = \frac{(50\text{ V})(0.10\text{ m})}{8.988 \times 10^9} = \frac{5.0}{8.988 \times 10^9} \approx 5.56 \times 10^{-10}\text{ C} = 0.556\text{ nC} = 556\text{ pC}$.",
+            "resultado": r"$5.56 \times 10^{-10}\text{ C} \ (0.556\text{ nC} = 556\text{ pC})$"
+        },
+
+        # ==================== SEMANA 8 ====================
+        {
+            "id": "s8_1", "semana": 8, "semanaTitle": "Capacitancia & Dieléctricos", "categoria": "Análisis y Lógica", "numero": 1,
+            "pregunta": "Si se duplica la carga neta de un capacitor, ¿qué ocurre con su capacitancia? Explique.",
+            "formula": r"$C = \frac{Q}{\Delta V} = \frac{\epsilon_0 A}{d}$",
+            "desarrollo": "La capacitancia <strong>permanece constante (no cambia)</strong>. La capacitancia es una propiedad física y geométrica del dispositivo (depende del área, forma, distancia entre placas y el dieléctrico). Si la carga se duplica ($Q \rightarrow 2Q$), la diferencia de potencial entre placas también se duplica automáticamente ($\Delta V \rightarrow 2\Delta V$), manteniendo la razón $C = Q/\Delta V$ invariable.",
+            "resultado": "No cambia (permanece constante)"
+        },
+        {
+            "id": "s8_2", "semana": 8, "semanaTitle": "Capacitancia & Dieléctricos", "categoria": "Análisis y Lógica", "numero": 2,
+            "pregunta": "Un capacitor de placas paralelas se conecta a una batería y luego se desconecta. Si las placas se separan más, ¿qué sucede con la energía almacenada? ¿De dónde proviene ese cambio de energía?",
+            "formula": r"$U = \frac{Q^2}{2C}, \quad C = \frac{\epsilon_0 A}{d}$",
+            "desarrollo": "Al estar desconectado de la batería, la carga $Q$ permanece constante. Al separar las placas ($d$ aumenta), la capacitancia $C$ disminuye. Como $U = \frac{Q^2}{2C}$, al disminuir el denominador, la energía almacenada <strong>aumenta</strong>. Este incremento en la energía potencial electrostática proviene del <strong>trabajo mecánico positivo</strong> realizado por un agente externo al separar las placas en contra de la fuerza de atracción atractiva electrostática.",
+            "resultado": "La energía aumenta; proviene del trabajo mecánico externo realizado para separar las placas atraídas"
+        },
+        {
+            "id": "s8_3", "semana": 8, "semanaTitle": "Capacitancia & Dieléctricos", "categoria": "Análisis y Lógica", "numero": 3,
+            "pregunta": "Explique físicamente por qué la inserción de un material dieléctrico aumenta la capacitancia de un capacitor.",
+            "formula": r"$E = \frac{E_0}{\kappa}, \quad \Delta V = \frac{\Delta V_0}{\kappa} \implies C = \kappa C_0$",
+            "desarrollo": "Al insertar un dieléctrico en presencia de un campo eléctrico, los dipolos moleculares del aislante se alinean (polarización), generando cargas superficiales inducidas opuestas en los extremos del dieléctrico. Esto origina un campo eléctrico inducido interno $E_{\text{ind}}$ de sentido contrario al campo externo, reduciendo el campo neto entre las placas a $E = E_0/\kappa$. Al disminuir el campo, la diferencia de potencial cae a $\Delta V = \Delta V_0/\kappa$. Por la definición $C = Q/\Delta V$, una menor diferencia de potencial para una misma carga significa una mayor capacitancia: $C = \kappa C_0$.",
+            "resultado": r"La polarización reduce el campo y el voltaje neto por factor $\kappa$, elevando la capacitancia a $C = \kappa C_0$"
+        },
+        {
+            "id": "s8_4", "semana": 8, "semanaTitle": "Capacitancia & Dieléctricos", "categoria": "Análisis y Lógica", "numero": 4,
+            "pregunta": "Dos capacitores idénticos se cargan a la misma diferencia de potencial. Al primero se le introduce un dieléctrico ($\kappa > 1$) mientras sigue conectado a la batería, y al segundo tras desconectarlo. ¿Cuál almacena más energía final?",
+            "formula": r"$U_1 = \frac{1}{2} C_1 (\Delta V)^2 = \kappa U_0; \quad U_2 = \frac{Q^2}{2C_2} = \frac{U_0}{\kappa}$",
+            "desarrollo": "Para el capacitor conectado a la batería, el voltaje se mantiene constante: $U_1 = \frac{1}{2}(\kappa C_0)(\Delta V)^2 = \kappa U_0$ (su energía aumenta). Para el capacitor desconectado, la carga se mantiene constante: $U_2 = \frac{Q_0^2}{2(\kappa C_0)} = \frac{U_0}{\kappa}$ (su energía disminuye). Dado que $\kappa > 1$, se cumple que $U_1 = \kappa^2 U_2 > U_2$.",
+            "resultado": "El primer capacitor (el que permanece conectado a la batería)"
+        },
+        {
+            "id": "s8_5", "semana": 8, "semanaTitle": "Capacitancia & Dieléctricos", "categoria": "Análisis y Lógica", "numero": 5,
+            "pregunta": "¿Qué es la rigidez dieléctrica de un material y qué relación tiene con el voltaje máximo de operación de un capacitor?",
+            "formula": r"$\Delta V_{\text{máx}} = E_{\text{ruptura}} \cdot d$",
+            "desarrollo": "La rigidez dieléctrica es el campo eléctrico máximo que un material aislante puede soportar sin sufrir ruptura dieléctrica (ionización destructiva que conduce corriente con chispa). La relación directa con el voltaje de diseño es $\Delta V_{\text{máx}} = E_{\text{ruptura}} \cdot d$, determinando la máxima tensión admisible antes de que el capacitor falle.",
+            "resultado": r"Es el campo máximo soportable; fija el voltaje máximo mediante $\Delta V_{\text{máx}} = E_{\text{ruptura}} \cdot d$"
+        },
+        {
+            "id": "s8_6", "semana": 8, "semanaTitle": "Capacitancia & Dieléctricos", "categoria": "Desarrollo Matemático", "numero": 6,
+            "pregunta": "Datos: Un capacitor de placas paralelas tiene un área de placa $A = 0.04\text{ m}^2$ y separación $d = 1.0\text{ mm}$. Calcule su capacitancia en el vacío.",
+            "formula": r"$C_0 = \frac{\epsilon_0 A}{d}$",
+            "desarrollo": r"Separación: $d = 1.0 \times 10^{-3}\text{ m}$.<br>$C_0 = \frac{(8.854 \times 10^{-12}\text{ F/m})(0.04\text{ m}^2)}{1.0 \times 10^{-3}\text{ m}} = 3.54 \times 10^{-10}\text{ F} = 354\text{ pF}$.",
+            "resultado": r"$354\text{ pF} \ (3.54 \times 10^{-10}\text{ F} = 0.354\text{ nF})$"
+        },
+        {
+            "id": "s8_7", "semana": 8, "semanaTitle": "Capacitancia & Dieléctricos", "categoria": "Desarrollo Matemático", "numero": 7,
+            "pregunta": "Datos: Un capacitor esférico está formado por dos esferas concéntricas de radios $a = 5.0\text{ cm}$ y $b = 8.0\text{ cm}$. Calcule su capacitancia.",
+            "formula": r"$C = \frac{a b}{k_e (b - a)}$",
+            "desarrollo": r"Radios en metros: $a = 0.05\text{ m}$, $b = 0.08\text{ m}$, $b - a = 0.03\text{ m}$.<br>$C = \frac{(0.05)(0.08)}{(8.988 \times 10^9)(0.03)} = \frac{0.0040}{2.6964 \times 10^8} \approx 1.48 \times 10^{-11}\text{ F}$.",
+            "resultado": r"$14.8\text{ pF} \ (1.48 \times 10^{-11}\text{ F})$"
+        },
+        {
+            "id": "s8_8", "semana": 8, "semanaTitle": "Capacitancia & Dieléctricos", "categoria": "Desarrollo Matemático", "numero": 8,
+            "pregunta": "Datos: Un capacitor de $10\ \mu\text{F}$ se conecta a una fuente de $12\text{ V}$. Calcule la energía total almacenada en el campo eléctrico del dispositivo.",
+            "formula": r"$U = \frac{1}{2} C (\Delta V)^2$",
+            "desarrollo": r"$U = \frac{1}{2}(10.0 \times 10^{-6}\text{ F})(12.0\text{ V})^2 = 0.5 \times 10^{-5} \times 144 = 7.20 \times 10^{-4}\text{ J}$.",
+            "resultado": r"$7.20 \times 10^{-4}\text{ J} = 0.72\text{ mJ} = 720\ \mu\text{J}$"
+        },
+        {
+            "id": "s8_9", "semana": 8, "semanaTitle": "Capacitancia & Dieléctricos", "categoria": "Desarrollo Matemático", "numero": 9,
+            "pregunta": "Datos: Se introduce un material dieléctrico de constante $\kappa = 3.5$ en un capacitor de placas paralelas inicialmente vacío de $250\text{ pF}$ que mantiene una carga constante $Q = 5.0\text{ nC}$. Calcule la nueva diferencia de potencial.",
+            "formula": r"$\Delta V = \frac{\Delta V_0}{\kappa} = \frac{Q}{\kappa C_0}$",
+            "desarrollo": r"Voltaje inicial: $\Delta V_0 = \frac{5.0 \times 10^{-9}\text{ C}}{250 \times 10^{-12}\text{ F}} = 20.0\text{ V}$.<br>Con carga constante, el voltaje se divide por $\kappa$: $\Delta V = \frac{20.0\text{ V}}{3.5} \approx 5.71\text{ V}$.",
+            "resultado": "5.71 V"
+        },
+        {
+            "id": "s8_10", "semana": 8, "semanaTitle": "Capacitancia & Dieléctricos", "categoria": "Desarrollo Matemático", "numero": 10,
+            "pregunta": "Datos: Un capacitor cilíndrico tiene un radio interno $a = 1.0\text{ mm}$, radio externo $b = 3.0\text{ mm}$ y longitud $L = 0.5\text{ m}$. Calcule su capacitancia si el espacio interelectródico está lleno de aire.",
+            "formula": r"$C = \frac{L}{2 k_e \ln(b/a)}$",
+            "desarrollo": r"$\frac{b}{a} = \frac{3.0}{1.0} = 3.0 \implies \ln(3.0) \approx 1.09861$.<br>$C = \frac{0.50}{2(8.988 \times 10^9)(1.09861)} = \frac{0.50}{1.9748 \times 10^{10}} \approx 2.53 \times 10^{-11}\text{ F}$.",
+            "resultado": r"$25.3\text{ pF} \ (2.53 \times 10^{-11}\text{ F})$"
+        },
+        {
+            "id": "s8_11", "semana": 8, "semanaTitle": "Capacitancia & Dieléctricos", "categoria": "Aplicación", "numero": 11,
+            "pregunta": "Datos: Un desfibrilador médico utiliza un capacitor que almacena $400\text{ J}$ de energía a un voltaje de $2,000\text{ V}$. Calcule el valor de la capacitancia necesaria.",
+            "formula": r"$U = \frac{1}{2} C (\Delta V)^2 \implies C = \frac{2U}{(\Delta V)^2}$",
+            "desarrollo": r"$C = \frac{2(400\text{ J})}{(2000\text{ V})^2} = \frac{800}{4.0 \times 10^6} = 2.00 \times 10^{-4}\text{ F} = 200\ \mu\text{F}$.",
+            "resultado": r"$200\ \mu\text{F} \ (2.00 \times 10^{-4}\text{ F})$"
+        },
+        {
+            "id": "s8_12", "semana": 8, "semanaTitle": "Capacitancia & Dieléctricos", "categoria": "Aplicación", "numero": 12,
+            "pregunta": "Datos: El teclado de una computadora utiliza capacitores de placas variables bajo cada tecla. Si el área es $A = 0.5\text{ cm}^2$ y la separación normal es $d = 1.2\text{ mm}$, calcule el cambio de capacitancia si la tecla se presiona disminuyendo la separación a $0.4\text{ mm}$.",
+            "formula": r"$C = \frac{\epsilon_0 A}{d}, \quad \Delta C = C_2 - C_1$",
+            "desarrollo": r"$A = 0.5 \times 10^{-4}\text{ m}^2 = 5.0 \times 10^{-5}\text{ m}^2$.<br>$C_1 = \frac{(8.854 \times 10^{-12})(5.0 \times 10^{-5})}{1.2 \times 10^{-3}} \approx 0.369\text{ pF}$.<br>$C_2 = \frac{(8.854 \times 10^{-12})(5.0 \times 10^{-5})}{0.4 \times 10^{-3}} \approx 1.107\text{ pF}$.<br>$\Delta C = 1.107 - 0.369 = +0.738\text{ pF}$ (se triplica).",
+            "resultado": r"$+0.738\text{ pF} \ (7.38 \times 10^{-13}\text{ F})$"
+        },
+        {
+            "id": "s8_13", "semana": 8, "semanaTitle": "Capacitancia & Dieléctricos", "categoria": "Aplicación", "numero": 13,
+            "pregunta": "Datos: Un ingeniero diseña un capacitor utilizando papel encerado ($\kappa = 2.5$, rigidez dieléctrica $= 15 \times 10^6\text{ V/m}$) de espesor $d = 0.1\text{ mm}$. Si el área es $A = 2.0\text{ m}^2$, calcule el voltaje máximo seguro si se aplica un factor de seguridad del $50\%$ (mitad de la rigidez).",
+            "formula": r"$V_{\text{seguro}} = E_{\text{seguro}} \cdot d$",
+            "desarrollo": r"Rigidez de diseño segura: $E_{\text{seguro}} = 0.50 \times (15.0 \times 10^6\text{ V/m}) = 7.50 \times 10^6\text{ V/m}$.<br>Espesor: $d = 0.1\text{ mm} = 1.0 \times 10^{-4}\text{ m}$.<br>$V_{\text{máx, seguro}} = (7.50 \times 10^6)(1.0 \times 10^{-4}) = 750\text{ V}$.",
+            "resultado": "750 V"
+        },
+        {
+            "id": "s8_14", "semana": 8, "semanaTitle": "Capacitancia & Dieléctricos", "categoria": "Aplicación", "numero": 14,
+            "pregunta": "Datos: Un sensor de humedad industrial mide la capacitancia de un dieléctrico poroso. Aire seco tiene $\kappa \approx 1$ y agua pura tiene $\kappa \approx 80$. Si el sensor vacío mide $100\text{ pF}$, determine la capacitancia teórica si los poros se inundan al $10\%$ con agua pura ($\kappa_{\text{prom}} = 0.9\kappa_{\text{aire}} + 0.1\kappa_{\text{agua}}$).",
+            "formula": r"$C = \kappa_{\text{prom}} C_0$",
+            "desarrollo": r"Constante dieléctrica efectiva de la mezcla:<br>$\kappa_{\text{prom}} = 0.9(1.0) + 0.1(80.0) = 0.9 + 8.0 = 8.9$.<br>$C = 8.9 \times 100\text{ pF} = 890\text{ pF}$.",
+            "resultado": r"$890\text{ pF} \ (0.89\text{ nF})$"
+        },
+        {
+            "id": "s8_15", "semana": 8, "semanaTitle": "Capacitancia & Dieléctricos", "categoria": "Aplicación", "numero": 15,
+            "pregunta": "Datos: Un cable coaxial de alta tensión puede modelarse como un capacitor cilíndrico de longitud $L = 10\text{ m}$, con radios $a = 0.5\text{ cm}$ y $b = 1.5\text{ cm}$, aislado con polietileno ($\kappa = 2.3$). Calcule la carga total por unidad de longitud si opera a $5,000\text{ V}$.",
+            "formula": r"$\lambda = \frac{Q}{L} = \left(\frac{C}{L}\right)\Delta V = \frac{\kappa \Delta V}{2 k_e \ln(b/a)}$",
+            "desarrollo": r"$\frac{b}{a} = \frac{1.5}{0.5} = 3.0 \implies \ln(3.0) \approx 1.09861$.<br>Capacitancia por unidad de longitud:<br>$\frac{C}{L} = \frac{2.3}{2(8.988 \times 10^9)(1.09861)} \approx 1.1646 \times 10^{-10}\text{ F/m}$.<br>Carga lineal: $\lambda = (1.1646 \times 10^{-10}\text{ F/m})(5000\text{ V}) \approx 5.82 \times 10^{-7}\text{ C/m}$.",
+            "resultado": r"$5.82 \times 10^{-7}\text{ C/m} = 0.582\ \mu\text{C/m} = 582\text{ nC/m}$"
+        },
+
+        # ==================== SEMANA 9 ====================
+        {
+            "id": "s9_1", "semana": 9, "semanaTitle": "Circuitos de Capacitores", "categoria": "Análisis y Lógica", "numero": 1,
+            "pregunta": "Al conectar dos capacitores diferentes en serie, ¿qué magnitud física es idéntica en ambos? ¿Y si se conectan en paralelo?",
+            "formula": r"$\text{Serie: } Q_1 = Q_2 = Q_{\text{tot}}; \quad \text{Paralelo: } \Delta V_1 = \Delta V_2 = \Delta V_{\text{tot}}$",
+            "desarrollo": "En <strong>serie</strong>, la magnitud idéntica es la <strong>carga eléctrica ($Q$)</strong>, porque la carga transferida desde una placa debe inducir la misma cantidad exacta en la placa adyacente aislada. En <strong>paralelo</strong>, la magnitud idéntica es la <strong>diferencia de potencial (voltaje $\Delta V$)</strong>, ya que todas las placas superiores se unen al mismo nodo de alto potencial y todas las placas inferiores al mismo nodo de referencia.",
+            "resultado": "Serie: Carga (Q) idéntica. Paralelo: Voltaje (ΔV) idéntico."
+        },
+        {
+            "id": "s9_2", "semana": 9, "semanaTitle": "Circuitos de Capacitores", "categoria": "Análisis y Lógica", "numero": 2,
+            "pregunta": "Si desea almacenar la máxima cantidad de energía combinando tres capacitores diferentes con una sola fuente de voltaje, ¿debería conectarlos en serie o en paralelo? Justifique.",
+            "formula": r"$U = \frac{1}{2} C_{\text{eq}} (\Delta V)^2$",
+            "desarrollo": "Debe conectarlos en <strong>paralelo</strong>. La energía para un voltaje fijo $\Delta V$ es directamente proporcional a la capacitancia equivalente $C_{\text{eq}}$. En paralelo, $C_{\text{eq}} = C_1 + C_2 + C_3$ (suma directa, siempre mayor que cualquier capacitor individual). En serie, la capacitancia equivalente disminuye y es estrictamente menor que la del capacitor más pequeño.",
+            "resultado": "En paralelo (porque maximiza la capacitancia equivalente y por ende la energía)"
+        },
+        {
+            "id": "s9_3", "semana": 9, "semanaTitle": "Circuitos de Capacitores", "categoria": "Análisis y Lógica", "numero": 3,
+            "pregunta": "Se conectan dos capacitores en serie. ¿La capacitancia equivalente es mayor, menor o igual que la capacitancia del capacitor más pequeño del grupo?",
+            "formula": r"$\frac{1}{C_{\text{eq}}} = \frac{1}{C_1} + \frac{1}{C_2} \implies C_{\text{eq}} = \frac{C_1 C_2}{C_1 + C_2}$",
+            "desarrollo": "Es estrictamente <strong>menor</strong> que la capacitancia del capacitor más pequeño. Al sumar los recíprocos de números positivos, el recíproco resultante es mayor que cualquiera de los términos originales, lo que significa que el inverso $C_{\text{eq}}$ es menor que $C_1$ y que $C_2$.",
+            "resultado": "Menor que la capacitancia del capacitor más pequeño"
+        },
+        {
+            "id": "s9_4", "semana": 9, "semanaTitle": "Circuitos de Capacitores", "categoria": "Análisis y Lógica", "numero": 4,
+            "pregunta": "Si un capacitor en un circuito en paralelo falla poniéndose en cortocircuito (se comporta como un cable continuo), ¿qué ocurre con el resto de los capacitores en paralelo?",
+            "formula": r"$\Delta V_{\text{nodo}} = 0\text{ V} \implies Q_i = C_i (0) = 0$",
+            "desarrollo": "El cortocircuito conecta directamente los dos nodos comunes de la red en paralelo, reduciendo la diferencia de potencial a cero ($\Delta V = 0$). Como consecuencia, todos los demás capacitores en paralelo se <strong>descargan de inmediato</strong>, y la fuente de alimentación queda expuesta a un cortocircuito franco que provocará sobrecorriente.",
+            "resultado": "El voltaje en todos cae a cero (se descargan por completo) y se produce sobrecorriente en la fuente"
+        },
+        {
+            "id": "s9_5", "semana": 9, "semanaTitle": "Circuitos de Capacitores", "categoria": "Análisis y Lógica", "numero": 5,
+            "pregunta": "Explique el proceso físico de redistribución de carga cuando un capacitor cargado se conecta en paralelo con uno idéntico pero completamente descargado.",
+            "formula": r"$Q_f = \frac{Q_0}{2}, \quad V_f = \frac{V_0}{2}, \quad U_f = \frac{1}{2} U_0$",
+            "desarrollo": "Al conectar ambos capacitores, la diferencia de potencial inicial impulsa un flujo de electrones desde el capacitor cargado hacia el descargado hasta que ambos alcanzan el mismo potencial de equilibrio. Al ser idénticos, la carga inicial se divide en partes exactamente iguales ($Q_f = Q_0/2$) y el voltaje final es la mitad ($V_f = V_0/2$). La energía electrostática almacenada final es exactamente el $50\%$ de la inicial; el $50\%$ restante se disipa en forma de calor por efecto Joule en los alambres de conexión y ondas electromagnéticas durante el transitorio.",
+            "resultado": "Cada capacitor termina con Q₀/2 y V₀/2; se conserva la carga y se disipa el 50% de la energía electrostática"
+        },
+        {
+            "id": "s9_6", "semana": 9, "semanaTitle": "Circuitos de Capacitores", "categoria": "Desarrollo Matemático", "numero": 6,
+            "pregunta": "Datos: Se conectan tres capacitores de $2.0\ \mu\text{F}$, $4.0\ \mu\text{F}$ y $6.0\ \mu\text{F}$ en serie a una batería de $24\text{ V}$. Calcule la capacitancia equivalente del circuito.",
+            "formula": r"$\frac{1}{C_{\text{eq}}} = \frac{1}{2.0} + \frac{1}{4.0} + \frac{1}{6.0}$",
+            "desarrollo": r"Denominador común $= 12$:<br>$\frac{1}{C_{\text{eq}}} = \frac{6 + 3 + 2}{12} = \frac{11}{12}\ \mu\text{F}^{-1} \implies C_{\text{eq}} = \frac{12}{11}\ \mu\text{F} \approx 1.091\ \mu\text{F}$.",
+            "resultado": r"$1.091\ \mu\text{F} \ \left(\frac{12}{11}\ \mu\text{F}\right)$"
+        },
+        {
+            "id": "s9_7", "semana": 9, "semanaTitle": "Circuitos de Capacitores", "categoria": "Desarrollo Matemático", "numero": 7,
+            "pregunta": "Datos: Con los mismos capacitores del problema anterior ($2.0\ \mu\text{F}$, $4.0\ \mu\text{F}$ y $6.0\ \mu\text{F}$), calcule ahora la capacitancia equivalente si se conectan en paralelo a la misma fuente de $24\text{ V}$.",
+            "formula": r"$C_{\text{eq}} = C_1 + C_2 + C_3$",
+            "desarrollo": r"Suma directa en paralelo:<br>$C_{\text{eq}} = 2.0\ \mu\text{F} + 4.0\ \mu\text{F} + 6.0\ \mu\text{F} = 12.0\ \mu\text{F}$.",
+            "resultado": r"$12.0\ \mu\text{F}$"
+        },
+        {
+            "id": "s9_8", "semana": 9, "semanaTitle": "Circuitos de Capacitores", "categoria": "Desarrollo Matemático", "numero": 8,
+            "pregunta": "Datos: Para el circuito en serie del problema 6, determine la carga y el voltaje en el capacitor de $2.0\ \mu\text{F}$.",
+            "formula": r"$Q = C_{\text{eq}} \cdot \Delta V, \quad V_1 = \frac{Q}{C_1}$",
+            "desarrollo": r"Carga total en serie (idéntica para todos los capacitores):<br>$Q = \left(\frac{12}{11}\ \mu\text{F}\right)(24\text{ V}) = \frac{288}{11}\ \mu\text{C} \approx 26.18\ \mu\text{C}$.<br><br>Voltaje en el capacitor de $2.0\ \mu\text{F}$:<br>$V_1 = \frac{288/11\ \mu\text{C}}{2.0\ \mu\text{F}} = \frac{144}{11}\text{ V} \approx 13.09\text{ V}$.",
+            "resultado": r"$Q = 26.18\ \mu\text{C} \ \left(\frac{288}{11}\ \mu\text{C}\right), \quad V = 13.09\text{ V} \ \left(\frac{144}{11}\text{ V}\right)$"
+        },
+        {
+            "id": "s9_9", "semana": 9, "semanaTitle": "Circuitos de Capacitores", "categoria": "Desarrollo Matemático", "numero": 9,
+            "pregunta": "Datos: Un capacitor $C_1 = 4.0\ \mu\text{F}$ se carga a $100\text{ V}$ y luego se desconecta. Se conecta en paralelo con un capacitor $C_2 = 6.0\ \mu\text{F}$ inicialmente descargado. Calcule el voltaje final de equilibrio del sistema.",
+            "formula": r"$Q_{\text{tot}} = C_1 V_1, \quad V_f = \frac{Q_{\text{tot}}}{C_1 + C_2}$",
+            "desarrollo": r"Carga conservada: $Q_{\text{tot}} = (4.0\ \mu\text{F})(100\text{ V}) = 400\ \mu\text{C}$.<br>Capacitancia en paralelo: $C_{\text{eq}} = 4.0 + 6.0 = 10.0\ \mu\text{F}$.<br>Voltaje final: $V_f = \frac{400\ \mu\text{C}}{10.0\ \mu\text{F}} = 40.0\text{ V}$.",
+            "resultado": "40.0 V"
+        },
+        {
+            "id": "s9_10", "semana": 9, "semanaTitle": "Circuitos de Capacitores", "categoria": "Desarrollo Matemático", "numero": 10,
+            "pregunta": "Datos: En una red mixta, un capacitor de $3.0\ \mu\text{F}$ está en serie con un bloque en paralelo compuesto por dos capacitores de $2.0\ \mu\text{F}$ y $4.0\ \mu\text{F}$. Calcule la capacitancia equivalente total.",
+            "formula": r"$C_p = C_2 + C_3, \quad C_{\text{eq}} = \frac{C_1 C_p}{C_1 + C_p}$",
+            "desarrollo": r"Bloque en paralelo: $C_p = 2.0\ \mu\text{F} + 4.0\ \mu\text{F} = 6.0\ \mu\text{F}$.<br>En serie con $C_1 = 3.0\ \mu\text{F}$:<br>$C_{\text{eq}} = \frac{3.0 \times 6.0}{3.0 + 6.0} = \frac{18.0}{9.0} = 2.00\ \mu\text{F}$.",
+            "resultado": r"$2.00\ \mu\text{F}$"
+        },
+        {
+            "id": "s9_11", "semana": 9, "semanaTitle": "Circuitos de Capacitores", "categoria": "Aplicación", "numero": 11,
+            "pregunta": "Datos: El sistema de flash de una cámara profesional requiere una capacitancia equivalente de $150\ \mu\text{F}$ capaz de operar a $300\text{ V}$. Si solo dispone de capacitores de $150\ \mu\text{F}$ pero con un voltaje máximo de diseño de $150\text{ V}$, diseñe el arreglo mínimo (número y tipo de conexión) necesario.",
+            "formula": r"V_{\text{rama}} = 150 + 150 = 300\text{ V}, \quad C_{\text{eq}} = \frac{150}{2} + \frac{150}{2} = 150\ \mu\text{F}",
+            "desarrollo": r"Para soportar $300\text{ V}$ con unidades de $150\text{ V}$, se deben colocar al menos 2 capacitores en serie por rama.<br>La capacitancia de cada rama en serie es $\frac{150}{2} = 75\ \mu\text{F}$.<br>Para lograr los $150\ \mu\text{F}$ requeridos, se conectan 2 ramas idénticas en paralelo: $75\ \mu\text{F} + 75\ \mu\text{F} = 150\ \mu\text{F}$.<br>Total: 4 capacitores en una matriz 2x2.",
+            "resultado": "4 capacitores (2 ramas en paralelo, cada rama con 2 capacitores en serie)"
+        },
+        {
+            "id": "s9_12", "semana": 9, "semanaTitle": "Circuitos de Capacitores", "categoria": "Aplicación", "numero": 12,
+            "pregunta": "Datos: En un circuito sintonizador de radio, se requiere una capacitancia exacta de $7.5\text{ pF}$. Si en el taller solo tiene componentes comerciales de $10\text{ pF}$ y $5.0\text{ pF}$, proponga una combinación que genere el valor exacto.",
+            "formula": r"C_{\text{eq}} = (5.0 \text{ en serie con } 5.0) + 5.0 = 2.5 + 5.0 = 7.5\text{ pF}",
+            "desarrollo": r"Se utilizan 3 capacitores de $5.0\text{ pF}$:<br>1. Se conectan dos de $5.0\text{ pF}$ en serie: $C_s = \frac{5.0 \times 5.0}{5.0 + 5.0} = 2.5\text{ pF}$.<br>2. Se conecta este bloque en paralelo con un tercer capacitor de $5.0\text{ pF}$: $C_{\text{eq}} = 2.5 + 5.0 = 7.5\text{ pF}$.",
+            "resultado": "3 capacitores de 5.0 pF (dos en serie puestos en paralelo con un tercero)"
+        },
+        {
+            "id": "s9_13", "semana": 9, "semanaTitle": "Circuitos de Capacitores", "categoria": "Aplicación", "numero": 13,
+            "pregunta": "Datos: Un sistema de respaldo de memoria de una computadora (UPS miniatura) utiliza una combinación en paralelo de 5 supercapacitores de $1.2\text{ F}$ cada uno a un voltaje de $5.0\text{ V}$. Calcule la energía total disponible para mantener la memoria viva durante un apagón.",
+            "formula": r"$C_{\text{eq}} = 5 \times 1.2\text{ F} = 6.0\text{ F}, \quad U = \frac{1}{2} C_{\text{eq}} V^2$",
+            "desarrollo": r"Capacitancia total: $C_{\text{eq}} = 5 \times 1.2 = 6.0\text{ F}$.<br>Energía almacenada: $U = \frac{1}{2}(6.0\text{ F})(5.0\text{ V})^2 = 3.0 \times 25.0 = 75.0\text{ J}$.",
+            "resultado": "75.0 J"
+        },
+        {
+            "id": "s9_14", "semana": 9, "semanaTitle": "Circuitos de Capacitores", "categoria": "Aplicación", "numero": 14,
+            "pregunta": "Datos: Un filtro electrónico automotriz tiene dos capacitores en paralelo ($C_1 = 22\ \mu\text{F}$, $C_2 = 47\ \mu\text{F}$) conectados al tomacorriente de $12\text{ V}$. Si un pico de tensión transitorio entrega repentinamente una carga extra de $1.0\text{ mC}$ distribuida en la red, calcule el incremento en el voltaje del sistema.",
+            "formula": r"$\Delta V = \frac{\Delta Q}{C_p} = \frac{\Delta Q}{C_1 + C_2}$",
+            "desarrollo": r"Capacitancia en paralelo: $C_p = 22 + 47 = 69\ \mu\text{F} = 69 \times 10^{-6}\text{ F}$.<br>Carga transitoria: $\Delta Q = 1.0\text{ mC} = 1.0 \times 10^{-3}\text{ C}$.<br>Incremento en voltaje: $\Delta V = \frac{1.0 \times 10^{-3}}{69 \times 10^{-6}} \approx 14.49\text{ V}$.",
+            "resultado": "14.49 V"
+        },
+        {
+            "id": "s9_15", "semana": 9, "semanaTitle": "Circuitos de Capacitores", "categoria": "Aplicación", "numero": 15,
+            "pregunta": "Datos: Un módulo electrónico aeroespacial utiliza tres capacitores redundantes en serie de $10\ \mu\text{F}$ cada uno. Si por vibración extrema el capacitor del centro falla y se rompe internamente abriendo el circuito (resistencia infinita), determine la nueva capacitancia del sistema entre los terminales principales.",
+            "formula": r"$\text{Circuito abierto en serie} \implies C_{\text{eq}} = 0\text{ F}$",
+            "desarrollo": "En un circuito en serie, todos los componentes forman una única ruta de conducción y transferencia de carga. Si uno de ellos se rompe físicamente en circuito abierto (resistencia infinita), se elimina el acoplamiento conductor/capacitivo con los terminales principales, dejando el circuito abierto e interrumpiendo el paso de carga.",
+            "resultado": "0 F (Circuito Abierto)"
+        },
+
+        # ==================== SEMANA 10 ====================
+        {
+            "id": "s10_1", "semana": 10, "semanaTitle": "Corriente & Resistencia", "categoria": "Análisis y Lógica", "numero": 1,
+            "pregunta": "Explique la diferencia fundamental entre los conceptos de resistencia eléctrica y resistividad. ¿Cuál es una propiedad intrínseca del material?",
+            "formula": r"$R = \rho \frac{\ell}{A}$",
+            "desarrollo": "La <strong>resistividad ($\rho$)</strong> es una propiedad intrínseca y microscópica de la sustancia, determinada únicamente por su estructura atómica y temperatura, independientemente de la forma o tamaño del objeto. La <strong>resistencia ($R$)</strong> es una propiedad extrínseca y macroscópica de un objeto conductor específico, que depende tanto de su resistividad intrínseca como de sus dimensiones geométricas (longitud $\ell$ y área transversal $A$).",
+            "resultado": "La propiedad intrínseca es la resistividad (ρ)"
+        },
+        {
+            "id": "s10_2", "semana": 10, "semanaTitle": "Corriente & Resistencia", "categoria": "Análisis y Lógica", "numero": 2,
+            "pregunta": "Si un cable cilíndrico de cobre se estira uniformemente hasta duplicar su longitud original manteniendo su volumen constante, ¿cómo cambia su resistencia eléctrica?",
+            "formula": r"$V = A_0 \ell_0 = A_f \ell_f \implies A_f = \frac{A_0}{2}, \quad R_f = \rho \frac{2\ell_0}{A_0/2} = 4 R_0$",
+            "desarrollo": "Al estirar el cable manteniendo el volumen constante, al duplicar la longitud ($\ell_f = 2\ell_0$), el área de la sección transversal debe reducirse a la mitad ($A_f = A_0/2$). La nueva resistencia es $R_f = \rho \frac{2\ell_0}{A_0/2} = 4 \left(\rho \frac{\ell_0}{A_0}\right) = 4 R_0$.",
+            "resultado": "Se cuadruplica (aumenta por un factor de 4)"
+        },
+        {
+            "id": "s10_3", "semana": 10, "semanaTitle": "Corriente & Resistencia", "categoria": "Análisis y Lógica", "numero": 3,
+            "pregunta": "¿Cómo afecta el incremento de temperatura a la resistencia eléctrica de un conductor metálico típico en comparación con un semiconductor? Explique brevemente la razón física.",
+            "formula": r"$R(T) = R_0 [1 + \alpha \Delta T]$",
+            "desarrollo": "&bull; <strong>Conductor metálico:</strong> Su resistencia aumenta ($\alpha > 0$). La densidad de electrones libres es constante; el calor aumenta la amplitud de oscilación térmica de los iones de la red, elevando la frecuencia de choques de los electrones.<br>&bull; <strong>Semiconductor:</strong> Su resistencia disminuye drásticamente ($\alpha < 0$). La energía térmica rompe enlaces covalentes y promueve electrones a la banda de conducción, aumentando exponencialmente la densidad de portadores libres $n$.",
+            "resultado": "En metales la resistencia aumenta (más choques en la red); en semiconductores disminuye (se liberan más electrones libres)"
+        },
+        {
+            "id": "s10_4", "semana": 10, "semanaTitle": "Corriente & Resistencia", "categoria": "Análisis y Lógica", "numero": 4,
+            "pregunta": "Defina la densidad de corriente ($J$) y explique su relación con la velocidad de deriva de los electrones portadores de carga.",
+            "formula": r"$\vec{J} = \frac{I}{A} = n q \vec{v}_d$",
+            "desarrollo": "La densidad de corriente $\vec{J}$ es la corriente por unidad de área de sección transversal perpendicular al flujo ($J = I/A$, en $\text{A/m}^2$). Microscópicamente, $\vec{J} = n q \vec{v}_d$, donde $n$ es la densidad de portadores de carga, $q$ la carga de cada portador y $\vec{v}_d$ la velocidad media de arrastre o deriva. Para electrones ($q = -e$), $\vec{J} = -n e \vec{v}_d$, indicando que la densidad de corriente tiene dirección contraria al desplazamiento de los electrones.",
+            "resultado": r"$J = I/A = n q v_d$ (opuesta a la velocidad de deriva de los electrones)"
+        },
+        {
+            "id": "s10_5", "semana": 10, "semanaTitle": "Corriente & Resistencia", "categoria": "Análisis y Lógica", "numero": 5,
+            "pregunta": "De acuerdo con la Ley de Ohm, si el voltaje aplicado a un elemento se duplica, la corriente se duplica. ¿Es esto válido para todos los componentes electrónicos? Dé un contraejemplo.",
+            "formula": r"$\text{Material Óhmico: } I \propto V \iff R = \text{cte}$",
+            "desarrollo": "<strong>No</strong>, no es válido para todos los componentes. La Ley de Ohm es una relación empírica que solo cumplen los materiales óhmicos (donde $R$ es constante e independiente de $V$). Contraejemplo: un <strong>diodo semiconductor</strong> (o diodo de unión p-n). En él, la corriente responde exponencialmente al voltaje ($I = I_s (e^{eV/kT} - 1)$); duplicar el voltaje puede incrementar la corriente cientos de veces.",
+            "resultado": "No. Contraejemplo: diodo semiconductor (unión p-n) o bombilla incandescente"
+        },
+        {
+            "id": "s10_6", "semana": 10, "semanaTitle": "Corriente & Resistencia", "categoria": "Desarrollo Matemático", "numero": 6,
+            "pregunta": "Datos: Un alambre de cobre ($\rho = 1.7 \times 10^{-8}\ \Omega\cdot\text{m}$) tiene una longitud de $20\text{ m}$ y un diámetro de $2.0\text{ mm}$. Calcule su resistencia eléctrica a temperatura ambiente.",
+            "formula": r"$R = \rho \frac{\ell}{\pi r^2}$",
+            "desarrollo": r"Radio: $r = 1.0\text{ mm} = 1.0 \times 10^{-3}\text{ m}$.<br>Área: $A = \pi (1.0 \times 10^{-3})^2 = \pi \times 10^{-6}\text{ m}^2 \approx 3.1416 \times 10^{-6}\text{ m}^2$.<br>$R = \frac{(1.7 \times 10^{-8})(20)}{\pi \times 10^{-6}} = \frac{0.34}{\pi} \approx 0.1082\ \Omega$.",
+            "resultado": r"$0.108\ \Omega = 108\text{ m}\Omega$"
+        },
+        {
+            "id": "s10_7", "semana": 10, "semanaTitle": "Corriente & Resistencia", "categoria": "Desarrollo Matemático", "numero": 7,
+            "pregunta": "Datos: Por la sección transversal de un conductor circula una corriente dada por la función $I(t) = 2t^2 + 5\text{ (A)}$. Calcule la carga total que pasa por dicha sección entre $t = 0\text{ s}$ y $t = 3\text{ s}$.",
+            "formula": r"$Q = \int_{0}^{3} I(t) dt$",
+            "desarrollo": r"$Q = \int_{0}^{3} (2t^2 + 5) dt = \left[ \frac{2}{3} t^3 + 5t \right]_{0}^{3} = \frac{2}{3}(27) + 5(3) = 18 + 15 = 33.0\text{ C}$.",
+            "resultado": "33.0 C"
+        },
+        {
+            "id": "s10_8", "semana": 10, "semanaTitle": "Corriente & Resistencia", "categoria": "Desarrollo Matemático", "numero": 8,
+            "pregunta": "Datos: Una barra de aluminio tiene una resistencia de $50\ \Omega$ a $20^\circ\text{C}$. Calcule su resistencia a $120^\circ\text{C}$ sabiendo que su coeficiente térmico de resistividad es $\alpha = 3.9 \times 10^{-3}\ ^\circ\text{C}^{-1}$.",
+            "formula": r"$R(T) = R_0 [1 + \alpha (T - T_0)]$",
+            "desarrollo": r"$\Delta T = 120^\circ\text{C} - 20^\circ\text{C} = 100^\circ\text{C}$.<br>$R = 50 [1 + (3.9 \times 10^{-3})(100)] = 50 [1 + 0.39] = 50 \times 1.39 = 69.5\ \Omega$.",
+            "resultado": r"$69.5\ \Omega$"
+        },
+        {
+            "id": "s10_9", "semana": 10, "semanaTitle": "Corriente & Resistencia", "categoria": "Desarrollo Matemático", "numero": 9,
+            "pregunta": "Datos: Un alambre cilíndrico transporta una corriente de $8.0\text{ A}$. Si el radio del cable es de $1.5\text{ mm}$, calcule el módulo de la densidad de corriente $J$.",
+            "formula": r"$J = \frac{I}{A} = \frac{I}{\pi r^2}$",
+            "desarrollo": r"Radio: $r = 1.5 \times 10^{-3}\text{ m}$.<br>Área: $A = \pi (1.5 \times 10^{-3})^2 = 2.25\pi \times 10^{-6} \approx 7.0686 \times 10^{-6}\text{ m}^2$.<br>$J = \frac{8.0\text{ A}}{7.0686 \times 10^{-6}\text{ m}^2} \approx 1.13 \times 10^6\text{ A/m}^2$.",
+            "resultado": r"$1.13 \times 10^6\text{ A/m}^2 = 1.13\text{ MA/m}^2$"
+        },
+        {
+            "id": "s10_10", "semana": 10, "semanaTitle": "Corriente & Resistencia", "categoria": "Desarrollo Matemático", "numero": 10,
+            "pregunta": "Datos: Un calentador eléctrico opera conectado a una línea de $120\text{ V}$ y consume una corriente de $12\text{ A}$. Calcule la potencia eléctrica disipada y la resistencia del filamento.",
+            "formula": r"$P = V \cdot I, \quad R = \frac{V}{I}$",
+            "desarrollo": r"Potencia: $P = (120\text{ V})(12\text{ A}) = 1440\text{ W} = 1.44\text{ kW}$.<br>Resistencia: $R = \frac{120\text{ V}}{12\text{ A}} = 10.0\ \Omega$.",
+            "resultado": r"$P = 1440\text{ W} \ (1.44\text{ kW}), \quad R = 10.0\ \Omega$"
+        },
+        {
+            "id": "s10_11", "semana": 10, "semanaTitle": "Corriente & Resistencia", "categoria": "Aplicación", "numero": 11,
+            "pregunta": "Datos: En una instalación eléctrica residencial, se utiliza cable de cobre calibre 12 ($A = 3.31\text{ mm}^2$). Si la corriente máxima permitida por seguridad es de $20\text{ A}$, determine la caída de voltaje a lo largo de una línea de $50\text{ m}$ (ida y vuelta total). ($\rho_{\text{Cu}} = 1.7 \times 10^{-8}\ \Omega\cdot\text{m}$).",
+            "formula": r"$R = \rho \frac{\ell}{A}, \quad \Delta V = I \cdot R$",
+            "desarrollo": r"Resistencia de la línea:<br>$R = \frac{(1.7 \times 10^{-8})(50)}{3.31 \times 10^{-6}} \approx 0.2568\ \Omega$.<br>Caída de potencial:<br>$\Delta V = (20\text{ A})(0.2568\ \Omega) \approx 5.14\text{ V}$.",
+            "resultado": "5.14 V"
+        },
+        {
+            "id": "s10_12", "semana": 10, "semanaTitle": "Corriente & Resistencia", "categoria": "Aplicación", "numero": 12,
+            "pregunta": "Datos: Una línea de transmisión aérea de aluminio ($\rho = 2.8 \times 10^{-8}\ \Omega\cdot\text{m}$) transporta energía a lo largo de $5.0\text{ km}$. Si no se permite que la resistencia total exceda de $0.4\ \Omega$, calcule el diámetro mínimo requerido para el cable.",
+            "formula": r"$A = \rho \frac{\ell}{R}, \quad D = \sqrt{\frac{4A}{\pi}}$",
+            "desarrollo": r"Longitud: $\ell = 5000\text{ m}$.<br>Área mínima: $A = \frac{(2.8 \times 10^{-8})(5000)}{0.4} = 3.50 \times 10^{-4}\text{ m}^2$.<br>Diámetro: $D = \sqrt{\frac{4(3.50 \times 10^{-4})}{\pi}} = \sqrt{4.4563 \times 10^{-4}} \approx 0.0211\text{ m} = 21.1\text{ mm} = 2.11\text{ cm}$.",
+            "resultado": r"$21.1\text{ mm} \ (2.11\text{ cm})$"
+        },
+        {
+            "id": "s10_13", "semana": 10, "semanaTitle": "Corriente & Resistencia", "categoria": "Aplicación", "numero": 13,
+            "pregunta": "Datos: El filamento de wolframio de una bombilla incandescente tradicional tiene una resistencia en frío ($20^\circ\text{C}$) de $15\ \Omega$. Cuando está encendido y conectado a $120\text{ V}$, consume una potencia de $60\text{ W}$. Determine la temperatura de operación del filamento. ($\alpha = 4.5 \times 10^{-3}\ ^\circ\text{C}^{-1}$).",
+            "formula": r"$R = \frac{V^2}{P}, \quad T = T_0 + \frac{R/R_0 - 1}{\alpha}$",
+            "desarrollo": r"Resistencia caliente: $R_{\text{cal}} = \frac{120^2}{60} = \frac{14400}{60} = 240\ \Omega$.<br>Razón de resistencias: $\frac{240}{15} = 16$.<br>$16 = 1 + (4.5 \times 10^{-3})(T - 20) \implies 15 = 0.0045(T - 20)$.<br>$T - 20 = \frac{15}{0.0045} = 3333.3^\circ\text{C} \implies T = 3353.3^\circ\text{C}$.",
+            "resultado": r"$3353^\circ\text{C} \ (3.35 \times 10^3\ ^\circ\text{C})$"
+        },
+        {
+            "id": "s10_14", "semana": 10, "semanaTitle": "Corriente & Resistencia", "categoria": "Aplicación", "numero": 14,
+            "pregunta": "Datos: Un sensor biomédico mide la resistencia de una muestra de tejido cilíndrico de longitud $1.5\text{ cm}$ y radio $4.0\text{ mm}$. Si el ohmímetro registra $120\ \Omega$, determine la resistividad del tejido biológico analizado para diagnóstico.",
+            "formula": r"$\rho = \frac{R A}{\ell} = \frac{R \pi r^2}{\ell}$",
+            "desarrollo": r"$\ell = 0.015\text{ m}, \quad r = 0.004\text{ m}$.<br>Área: $A = \pi (0.004)^2 = 1.6\pi \times 10^{-5} \approx 5.0265 \times 10^{-5}\text{ m}^2$.<br>$\rho = \frac{(120)(5.0265 \times 10^{-5})}{0.015} \approx 0.402\ \Omega\cdot\text{m}$.",
+            "resultado": r"$0.402\ \Omega\cdot\text{m}$"
+        },
+        {
+            "id": "s10_15", "semana": 10, "semanaTitle": "Corriente & Resistencia", "categoria": "Aplicación", "numero": 15,
+            "pregunta": "Datos: Un automóvil eléctrico consume $150\text{ A}$ directos de su banco de baterías de $400\text{ V}$ durante una aceleración en rampa. Calcule la energía total consumida en Kilovatios-hora (kWh) si mantiene este régimen durante exactamente $2.0\text{ minutos}$.",
+            "formula": r"$P = V \cdot I, \quad E = P \cdot t$",
+            "desarrollo": r"Potencia: $P = (400\text{ V})(150\text{ A}) = 60,000\text{ W} = 60\text{ kW}$.<br>Tiempo en horas: $t = 2.0\text{ min} = \frac{2}{60}\text{ h} = \frac{1}{30}\text{ h}$.<br>Energía: $E = 60\text{ kW} \times \frac{1}{30}\text{ h} = 2.00\text{ kWh}$.<br>(En Joules: $60000\text{ W} \times 120\text{ s} = 7.20\text{ MJ}$).",
+            "resultado": r"$2.00\text{ kWh} \ (7.20\text{ MJ})$"
+        },
+
+        # ==================== SEMANA 11 ====================
+        {
+            "id": "s11_1", "semana": 11, "semanaTitle": "Circuitos de Resistores", "categoria": "Análisis y Lógica", "numero": 1,
+            "pregunta": "Al conectar varios resistores de distintos valores en paralelo a una fuente de voltaje, ¿cuál de ellos disipará la mayor cantidad de potencia: el de mayor o el de menor resistencia? Justifique.",
+            "formula": r"$P = \frac{V^2}{R}$",
+            "desarrollo": "El de <strong>menor resistencia</strong> disipará la mayor potencia. En paralelo, todos los componentes experimentan la misma diferencia de potencial $V$. Como la potencia es $P = \frac{V^2}{R}$, para voltaje constante la potencia es inversamente proporcional a la resistencia ($P \propto 1/R$). Por ende, el resistor con menor valor óhmico absorbe mayor corriente y disipa más potencia térmica.",
+            "resultado": "El de menor resistencia (porque P = V²/R y el voltaje es el mismo)"
+        },
+        {
+            "id": "s11_2", "semana": 11, "semanaTitle": "Circuitos de Resistores", "categoria": "Análisis y Lógica", "numero": 2,
+            "pregunta": "Si un resistor en una red en serie se quema y se abre por completo, ¿qué ocurre con la corriente en los demás resistores del circuito?",
+            "formula": r"I = \frac{V}{R_{\text{eq}}} = \frac{V}{\infty} = 0\text{ A}",
+            "desarrollo": "La corriente en todos los demás resistores cae inmediatamente a <strong>cero ($I = 0$)</strong>. En un circuito en serie existe un único lazo conductor cerrado; al abrirse un componente, se interrumpe la continuidad del circuito y cesa la corriente en todos los elementos.",
+            "resultado": "Cae a cero (I = 0 A) en todos los demás componentes"
+        },
+        {
+            "id": "s11_3", "semana": 11, "semanaTitle": "Circuitos de Resistores", "categoria": "Análisis y Lógica", "numero": 3,
+            "pregunta": "Explique conceptualmente por qué la resistencia equivalente de un arreglo de resistores en paralelo siempre es menor que el valor del resistor más pequeño del grupo.",
+            "formula": r"$\frac{1}{R_{\text{eq}}} = \sum \frac{1}{R_i}$",
+            "desarrollo": "Porque cada nueva rama en paralelo proporciona un camino conductor alternativo e independiente para el flujo de electrones, aumentando el área efectiva de conducción de la red (análogo a habilitar más carriles en una autopista con tráfico). Al haber más caminos disponibles, la facilidad de conducción de la red aumenta y la resistencia equivalente total siempre es menor que la del camino individual más fácil.",
+            "resultado": "Porque cada rama añade un camino adicional de flujo, reduciendo la oposición total"
+        },
+        {
+            "id": "s11_4", "semana": 11, "semanaTitle": "Circuitos de Resistores", "categoria": "Análisis y Lógica", "numero": 4,
+            "pregunta": "¿Qué es un divisor de voltaje y bajo qué tipo de conexión de resistores se fundamenta su principio de operación?",
+            "formula": r"$V_k = V_{\text{fuente}} \left(\frac{R_k}{R_{\text{eq}}}\right)$",
+            "desarrollo": "Un divisor de voltaje es un circuito diseñado para obtener una fracción específica y proporcional del voltaje de entrada. Se fundamenta en una conexión en <strong>SERIE</strong>, pues al circular la misma corriente por todos los elementos, la caída de tensión en cada resistor es proporcional a su propia resistencia.",
+            "resultado": "Circuito para fraccionar voltaje; se fundamenta en una conexión en SERIE"
+        },
+        {
+            "id": "s11_5", "semana": 11, "semanaTitle": "Circuitos de Resistores", "categoria": "Análisis y Lógica", "numero": 5,
+            "pregunta": "Dispone de tres focos idénticos diseñados para operar a 110 V. Si los conecta en serie a una línea de 110 V, ¿iluminarán con la misma intensidad que si se conectaran en paralelo a la misma línea? Explique basándose en la potencia disipada.",
+            "formula": r"$P_s = \frac{(V/3)^2}{R} = \frac{V^2}{9R} = \frac{1}{9} P_p$",
+            "desarrollo": "<strong>No</strong>, iluminarán con una intensidad drásticamente inferior (1/9 de la potencia de cada foco en paralelo). En paralelo a $110\text{ V}$, cada foco recibe $110\text{ V}$ y disipa su potencia nominal $P = V^2/R$. En serie a $110\text{ V}$, la tensión se divide equitativamente: cada foco recibe solo $V/3 \approx 36.7\text{ V}$, por lo que su potencia disipada cae a $P_s = (V/3)^2/R = P_p/9$ (solo el $11.1\%$ de su brillo normal).",
+            "resultado": "No, iluminan muchísimo menos (cada uno disipa solo 1/9 de la potencia)"
+        },
+        {
+            "id": "s11_6", "semana": 11, "semanaTitle": "Circuitos de Resistores", "categoria": "Desarrollo Matemático", "numero": 6,
+            "pregunta": "Datos: Tres resistores de valores $10\ \Omega$, $20\ \Omega$ y $30\ \Omega$ se conectan en serie a una fuente ideal de $12\text{ V}$. Calcule la resistencia equivalente y la corriente total del circuito.",
+            "formula": r"$R_{\text{eq}} = R_1 + R_2 + R_3, \quad I = \frac{V}{R_{\text{eq}}}$",
+            "desarrollo": r"Suma en serie: $R_{\text{eq}} = 10 + 20 + 30 = 60.0\ \Omega$.<br>Corriente total: $I = \frac{12.0\text{ V}}{60.0\ \Omega} = 0.20\text{ A} = 200\text{ mA}$.",
+            "resultado": r"$R_{\text{eq}} = 60.0\ \Omega, \quad I_{\text{tot}} = 0.20\text{ A} \ (200\text{ mA})$"
+        },
+        {
+            "id": "s11_7", "semana": 11, "semanaTitle": "Circuitos de Resistores", "categoria": "Desarrollo Matemático", "numero": 7,
+            "pregunta": "Datos: Con los mismos resistores del problema anterior ($10\ \Omega$, $20\ \Omega$ y $30\ \Omega$), calcule la resistencia equivalente y la corriente total si se conectan en paralelo a la fuente de $12\text{ V}$.",
+            "formula": r"$\frac{1}{R_{\text{eq}}} = \frac{1}{10} + \frac{1}{20} + \frac{1}{30}, \quad I = \frac{V}{R_{\text{eq}}}$",
+            "desarrollo": r"$\frac{1}{R_{\text{eq}}} = \frac{6 + 3 + 2}{60} = \frac{11}{60}\ \Omega^{-1} \implies R_{\text{eq}} = \frac{60}{11}\ \Omega \approx 5.45\ \Omega$.<br>Corriente total: $I = \frac{12}{60/11} = \frac{132}{60} = 2.20\text{ A}$.",
+            "resultado": r"$R_{\text{eq}} = 5.45\ \Omega \ \left(\frac{60}{11}\ \Omega\right), \quad I_{\text{tot}} = 2.20\text{ A}$"
+        },
+        {
+            "id": "s11_8", "semana": 11, "semanaTitle": "Circuitos de Resistores", "categoria": "Desarrollo Matemático", "numero": 8,
+            "pregunta": "Datos: Para el circuito en serie del problema 6, calcule la caída de voltaje en el resistor de $20\ \Omega$ y la potencia disipada por este componente.",
+            "formula": r"$V_2 = I R_2, \quad P_2 = I^2 R_2$",
+            "desarrollo": r"Con $I = 0.20\text{ A}$:<br>Voltaje: $V_2 = (0.20\text{ A})(20\ \Omega) = 4.00\text{ V}$.<br>Potencia: $P_2 = (0.20)^2(20) = 0.04 \times 20 = 0.80\text{ W} = 800\text{ mW}$.",
+            "resultado": r"$V_{20} = 4.00\text{ V}, \quad P_{20} = 0.80\text{ W} \ (800\text{ mW})$"
+        },
+        {
+            "id": "s11_9", "semana": 11, "semanaTitle": "Circuitos de Resistores", "categoria": "Desarrollo Matemático", "numero": 9,
+            "pregunta": "Datos: En un circuito en paralelo con dos ramas ($R_1 = 15\ \Omega$ y $R_2$ desconocida), se sabe que la corriente total es de $5.0\text{ A}$ y la corriente a través de $R_1$ es de $2.0\text{ A}$. Determine el valor de $R_2$.",
+            "formula": r"$I_2 = I_{\text{tot}} - I_1, \quad V = I_1 R_1 = I_2 R_2$",
+            "desarrollo": r"Corriente por la rama 2: $I_2 = 5.0 - 2.0 = 3.0\text{ A}$.<br>Voltaje común: $V = (2.0\text{ A})(15\ \Omega) = 30.0\text{ V}$.<br>Resistencia: $R_2 = \frac{30.0\text{ V}}{3.0\text{ A}} = 10.0\ \Omega$.",
+            "resultado": r"$10.0\ \Omega$"
+        },
+        {
+            "id": "s11_10", "semana": 11, "semanaTitle": "Circuitos de Resistores", "categoria": "Desarrollo Matemático", "numero": 10,
+            "pregunta": "Datos: Calcule la resistencia equivalente entre los terminales A y B de una red donde un resistor de $5.0\ \Omega$ está en serie con una combinación en paralelo de un resistor de $12\ \Omega$ y uno de $4.0\ \Omega$.",
+            "formula": r"$R_p = \frac{12 \times 4.0}{12 + 4.0}, \quad R_{\text{eq}} = 5.0 + R_p$",
+            "desarrollo": r"Bloque en paralelo: $R_p = \frac{48}{16} = 3.0\ \Omega$.<br>En serie con $5.0\ \Omega$: $R_{\text{eq}} = 5.0 + 3.0 = 8.00\ \Omega$.",
+            "resultado": r"$8.00\ \Omega$"
+        },
+        {
+            "id": "s11_11", "semana": 11, "semanaTitle": "Circuitos de Resistores", "categoria": "Aplicación", "numero": 11,
+            "pregunta": "Datos: Una serie de luces navideñas consta de 50 bombillas idénticas conectadas en serie a un tomacorriente de $120\text{ V}$. Si la cadena consume una potencia total de $25\text{ W}$, determine la resistencia operativa de cada bombilla individual.",
+            "formula": r"$R_{\text{tot}} = \frac{V^2}{P_{\text{tot}}}, \quad R_{\text{bombilla}} = \frac{R_{\text{tot}}}{50}$",
+            "desarrollo": r"Resistencia total: $R_{\text{tot}} = \frac{120^2}{25} = \frac{14400}{25} = 576\ \Omega$.<br>Como son 50 en serie: $R_{\text{bombilla}} = \frac{576}{50} = 11.52\ \Omega$.",
+            "resultado": r"$11.52\ \Omega$"
+        },
+        {
+            "id": "s11_12", "semana": 11, "semanaTitle": "Circuitos de Resistores", "categoria": "Aplicación", "numero": 12,
+            "pregunta": "Datos: Un ingeniero de audio necesita acoplar un altavoz que requiere una impedancia (resistencia efectiva) exacta de $8.0\ \Omega$. Si solo dispone en stock de resistores de potencia de $16\ \Omega$, diseñe de manera sencilla la red requerida utilizando la menor cantidad de componentes posibles.",
+            "formula": r"$R_{\text{eq}} = \frac{16 \times 16}{16 + 16} = 8.0\ \Omega$",
+            "desarrollo": r"Conectar dos resistores de $16\ \Omega$ en paralelo:<br>$R_{\text{eq}} = \frac{16}{2} = 8.0\ \Omega$. Requiere exactamente 2 resistores.",
+            "resultado": "2 resistores de 16 Ω conectados en paralelo"
+        },
+        {
+            "id": "s11_13", "semana": 11, "semanaTitle": "Circuitos de Resistores", "categoria": "Aplicación", "numero": 13,
+            "pregunta": "Datos: El circuito electrónico de un sensor requiere un voltaje de referencia exacto de $3.0\text{ V}$, pero la batería disponible en la placa es de $9.0\text{ V}$. Utilizando un circuito divisor de voltaje con dos resistores en serie donde el resistor de salida es de $1,000\ \Omega$, determine el valor del otro resistor necesario para completar el diseño.",
+            "formula": r"$V_{\text{out}} = V_{\text{in}} \left(\frac{R_2}{R_1 + R_2}\right)$",
+            "desarrollo": r"$3.0 = 9.0 \left(\frac{1000}{R_1 + 1000}\right) \implies \frac{1}{3} = \frac{1000}{R_1 + 1000}$.<br>$R_1 + 1000 = 3000 \implies R_1 = 2000\ \Omega = 2.0\text{ k}\Omega$.",
+            "resultado": r"$2,000\ \Omega = 2.0\text{ k}\Omega$"
+        },
+        {
+            "id": "s11_14", "semana": 11, "semanaTitle": "Circuitos de Resistores", "categoria": "Aplicación", "numero": 14,
+            "pregunta": "Datos: Un sistema de calefacción por suelo radiante residencial consta de 4 paneles resistivos idénticos. Cada panel tiene una resistencia de $48\ \Omega$. Si se conectan en paralelo a una línea de alimentación estándar de $240\text{ V}$, calcule la corriente total de la instalación y verifique si un disyuntor de protección de $25\text{ A}$ soportará la carga sin dispararse.",
+            "formula": r"$I_k = \frac{V}{R_k}, \quad I_{\text{tot}} = 4 \times I_k$",
+            "desarrollo": r"Corriente por panel: $I_k = \frac{240\text{ V}}{48\ \Omega} = 5.0\text{ A}$.<br>Corriente total: $I_{\text{tot}} = 4 \times 5.0\text{ A} = 20.0\text{ A}$.<br>Comparación: $20.0\text{ A} < 25.0\text{ A}$, por lo que el disyuntor SÍ soportará la carga continua sin dispararse (opera al 80% de su capacidad nominal).",
+            "resultado": "20.0 A; SÍ lo soportará (20 A < 25 A)"
+        },
+        {
+            "id": "s11_15", "semana": 11, "semanaTitle": "Circuitos de Resistores", "categoria": "Aplicación", "numero": 15,
+            "pregunta": "Datos: Un instrumento científico de laboratorio de alta precisión utiliza una red de tres derivaciones en paralelo para medir corrientes altas. Las resistencias son de $1.0\ \Omega$, $2.0\ \Omega$ y $0.5\ \Omega$. Si por un error de calibración la resistencia de $0.5\ \Omega$ se desconecta accidentalmente del circuito mientras circula una corriente total constante de $3.5\text{ A}$, determine el cambio porcentual en la resistencia equivalente de la red de medición.",
+            "formula": r"$\% \Delta R = \frac{R_{\text{eq2}} - R_{\text{eq1}}}{R_{\text{eq1}}} \times 100\%$",
+            "desarrollo": r"1. Estado inicial:<br>$\frac{1}{R_{\text{eq1}}} = 1.0 + 0.5 + 2.0 = 3.5 = \frac{7}{2} \implies R_{\text{eq1}} = \frac{2}{7}\ \Omega \approx 0.2857\ \Omega$.<br>2. Estado final (sin la de $0.5\ \Omega$):<br>$\frac{1}{R_{\text{eq2}}} = 1.0 + 0.5 = 1.5 = \frac{3}{2} \implies R_{\text{eq2}} = \frac{2}{3}\ \Omega \approx 0.6667\ \Omega$.<br>3. Cambio porcentual:<br>$\% \Delta R = \frac{2/3 - 2/7}{2/7} \times 100\% = \frac{8/21}{2/7} \times 100\% = \frac{4}{3} \times 100\% = +133.33\%$.",
+            "resultado": "+133.33% (aumento del 133.33%)"
+        }
+    ]
+    return problems
+
+def main():
+    problems = get_all_problems()
+    problems_json = json.dumps(problems, ensure_ascii=False)
+    html_content = HTML_TEMPLATE.replace('__PROBLEMS_DATA_PLACEHOLDER__', problems_json)
+    
+    output_dir = r"c:\Universidad\fisica2-estudio"
+    os.makedirs(output_dir, exist_ok=True)
+    
+    html_path = os.path.join(output_dir, "index.html")
+    with open(html_path, "w", encoding="utf-8") as f:
+        f.write(html_content)
+    
+    print(f"Página generada con {len(problems)} ejercicios en: {html_path}")
+
+if __name__ == "__main__":
+    main()

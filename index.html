@@ -584,7 +584,7 @@
               ${item.formula ? `
                 <div class="p-2.5 rounded-lg bg-gray-900/90 border border-gray-800/80 flex items-center gap-3">
                   <span class="text-xs text-cyan-400 font-medium flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-square-root-variable"></i> Fórmula:</span>
-                  <div class="text-xs font-mono text-cyan-200 overflow-x-auto">$${item.formula}$</div>
+                  <div class="text-xs font-mono text-cyan-200 overflow-x-auto py-1">$${item.formula}$</div>
                 </div>
               ` : ''}
 
@@ -598,7 +598,7 @@
                   <i class="fa-solid fa-circle-check text-emerald-400"></i> Resultado Oficial:
                 </span>
                 <span class="text-sm font-bold font-mono text-emerald-300">
-                  $${item.resultado}$
+                  ${item.resultado}
                 </span>
               </div>
             </div>

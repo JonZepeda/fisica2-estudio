@@ -20,7 +20,7 @@ window.PROBLEMS_DATA = [
     pregunta: "Al moverse en la dirección de las líneas de campo eléctrico, ¿el potencial eléctrico aumenta, disminuye o se mantiene igual?",
     formula: "\\Delta V = V_B - V_A = -\\int_A^B \\vec{E} \\cdot d\\vec{s}",
     desarrollo: "<strong>Disminuye</strong>. Por definición matemática, la diferencia de potencial es el negativo de la integral de línea del campo. Al desplazarse en el mismo sentido que las líneas de $\\vec{E}$ (donde $\\vec{E} \\cdot d\\vec{s} > 0$), se obtiene $\\Delta V < 0$, lo que implica $V_{\\text{final}} < V_{\\text{inicial}}$. Las líneas de campo siempre apuntan hacia donde el potencial decrece.",
-    resultado: "Disminuye ($\Delta V < 0$)"
+    resultado: "Disminuye ($\\Delta V < 0$)"
   },
   {
     id: "s7_4", semana: 7, semanaTitle: "Potencial Eléctrico", categoria: "Análisis y Lógica", numero: 4,

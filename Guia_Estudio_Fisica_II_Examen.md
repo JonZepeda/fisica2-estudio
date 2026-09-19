@@ -201,8 +201,8 @@
    * **Deducción**: Todo elemento de carga $dq$ del anillo equidista del punto axial $P$, con distancia $r = \sqrt{R^2 + x^2}$.
      $$V = k_e \int \frac{dq}{r} = \frac{k_e}{\sqrt{R^2 + x^2}} \int dq = \frac{k_e Q}{\sqrt{R^2 + x^2}}$$
    * **Cálculo**:
-     * $r = \sqrt{(0.5)^2 + (1.2)^2} = \sqrt{0.25 + 1.44} = \sqrt{1.69} = 1.30\text{ m}$.
-     $$V = \frac{(8.988 \times 10^9\text{ N}\cdot\text{m}^2/\text{C}^2)(12.0 \times 10^{-6}\text{ C})}{1.30\text{ m}} = \frac{107,856}{1.30} \approx \mathbf{82,966\text{ V}} \approx \mathbf{82.97\text{ kV}}$$
+      * $r = \sqrt{(0.5)^2 + (1.2)^2} = \sqrt{0.25 + 1.44} = \sqrt{1.69} = 1.30\text{ m}$.
+      $$V = \frac{(8.99 \times 10^9\text{ N}\cdot\text{m}^2/\text{C}^2)(12.0 \times 10^{-6}\text{ C})}{1.30\text{ m}} = \frac{107,880}{1.30} = \mathbf{82,984.6\text{ V}} \approx \mathbf{82.98\text{ kV}}$$
 
 9. **Potencial $V(x, y) = 3x^2y - 5x$. Calcule el vector campo eléctrico $\vec{E}$ en $(1, 2)\text{ m}$.**
    * Componentes del campo mediante derivadas parciales:
@@ -222,14 +222,14 @@
     * Integración:
       $$V = k_e \int_{d}^{d+L} \frac{\lambda dx}{x} = k_e \lambda \left[ \ln x \right]_{d}^{d+L} = k_e \lambda \ln\left( \frac{d + L}{d} \right)$$
       $$\frac{d + L}{d} = \frac{0.5 + 2.0}{0.5} = \frac{2.5}{0.5} = 5.0$$
-      $$V = (8.988 \times 10^9)(4.0 \times 10^{-6}) \ln(5.0) = 35,952 \times 1.60944 \approx \mathbf{57,862\text{ V}} \approx \mathbf{57.86\text{ kV}}$$
+      $$V = (8.99 \times 10^9)(4.0 \times 10^{-6}) \ln(5.0) = 35,960 \times 1.609438 = \mathbf{57,875.4\text{ V}} \approx \mathbf{57.88\text{ kV}}$$
 
 ---
 
 #### Aplicación
 11. **Protón ($q = 1.6 \times 10^{-19}\text{ C}, m = 1.67 \times 10^{-27}\text{ kg}$) acelerado desde el reposo con $\Delta V = 15,000\text{ V}$. Calcule la velocidad final.**
     * Por conservación de energía: $\Delta K + \Delta U = 0 \implies \frac{1}{2} m v^2 = q \Delta V$.
-      $$v = \sqrt{\frac{2 q \Delta V}{m}} = \sqrt{\frac{2(1.60 \times 10^{-19}\text{ C})(15,000\text{ V})}{1.67 \times 10^{-27}\text{ kg}}} = \sqrt{\frac{4.80 \times 10^{-15}}{1.67 \times 10^{-27}}} = \sqrt{2.874 \times 10^{12}} \approx \mathbf{1.70 \times 10^6\text{ m/s}}$$
+      $$v = \sqrt{\frac{2 q \Delta V}{m}} = \sqrt{\frac{2(1.60 \times 10^{-19}\text{ C})(15,000\text{ V})}{1.67 \times 10^{-27}\text{ kg}}} = \sqrt{\frac{4.80 \times 10^{-15}}{1.67 \times 10^{-27}}} = \sqrt{2.874 \times 10^{12}} = \mathbf{1.69 \times 10^6\text{ m/s}} \ (1,695\text{ km/s})$$
 
 12. **Esfera conductora de Van de Graaff de radio $R = 0.15\text{ m}$. Ruptura del aire a $E_{\text{máx}} = 3.0 \times 10^6\text{ V/m}$. Calcule el potencial máximo.**
     * En la superficie de una esfera conductora: $E_{\text{sup}} = \frac{k_e Q}{R^2}$ y $V_{\text{sup}} = \frac{k_e Q}{R}$.
@@ -242,7 +242,7 @@
 14. **Esfera conductora hueca con radio interno $R_1 = 10\text{ cm}$ y externo $R_2 = 15\text{ cm} = 0.15\text{ m}$ con carga central de $+2.0\ \mu\text{C}$. Potencial en la superficie exterior.**
     * La carga central induce $-q$ en el interior y $+q$ en la superficie externa. Para todo punto $r \ge R_2$, el campo es el de una carga puntual $+q$ en el origen.
     * Con referencia $V(\infty) = 0$:
-      $$V(R_2) = \frac{k_e q}{R_2} = \frac{(8.988 \times 10^9\text{ N}\cdot\text{m}^2/\text{C}^2)(2.0 \times 10^{-6}\text{ C})}{0.15\text{ m}} = \frac{17,976}{0.15} \approx \mathbf{119,840\text{ V}} \approx \mathbf{120\text{ kV}}$$
+      $$V(R_2) = \frac{k_e q}{R_2} = \frac{(8.99 \times 10^9\text{ N}\cdot\text{m}^2/\text{C}^2)(2.0 \times 10^{-6}\text{ C})}{0.15\text{ m}} = \frac{17,980}{0.15} = \mathbf{119,866.7\text{ V}} \approx \mathbf{120\text{ kV}}$$
 
 15. **Línea de ensamblaje: potencial no debe superar $50\text{ V}$ a $r = 10\text{ cm} = 0.10\text{ m}$. Calcule la carga puntual máxima permitida.**
     $$V = \frac{k_e q_{\text{máx}}}{r} \implies q_{\text{máx}} = \frac{V \cdot r}{k_e} = \frac{(50\text{ V})(0.10\text{ m})}{8.988 \times 10^9\text{ N}\cdot\text{m}^2/\text{C}^2} = \mathbf{5.56 \times 10^{-10}\text{ C}} = \mathbf{0.556\text{ nC}} = \mathbf{556\text{ pC}}$$
@@ -306,9 +306,9 @@
     $$U = \frac{1}{2} C (\Delta V)^2 \implies C = \frac{2 U}{(\Delta V)^2} = \frac{2(400\text{ J})}{(2000\text{ V})^2} = \frac{800}{4.0 \times 10^6} = \mathbf{2.00 \times 10^{-4}\text{ F}} = \mathbf{200\ \mu\text{F}}$$
 
 12. **Tecla de teclado: $A = 0.5\text{ cm}^2 = 5.0 \times 10^{-5}\text{ m}^2$. Separación cambia de $d_1 = 1.2\text{ mm}$ a $d_2 = 0.4\text{ mm}$. Calcule el cambio de capacitancia $\Delta C$.**
-    $$C_1 = \frac{\epsilon_0 A}{d_1} = \frac{(8.854 \times 10^{-12})(5.0 \times 10^{-5})}{1.2 \times 10^{-3}} \approx 0.369\text{ pF}$$
-    $$C_2 = \frac{\epsilon_0 A}{d_2} = \frac{(8.854 \times 10^{-12})(5.0 \times 10^{-5})}{0.4 \times 10^{-3}} \approx 1.107\text{ pF}$$
-    $$\Delta C = C_2 - C_1 = 1.107\text{ pF} - 0.369\text{ pF} = \mathbf{+0.738\text{ pF}} = \mathbf{7.38 \times 10^{-13}\text{ F}}$$
+    $$C_1 = \frac{\epsilon_0 A}{d_1} = \frac{(8.85 \times 10^{-12})(5.0 \times 10^{-5})}{1.2 \times 10^{-3}} \approx 0.3688\text{ pF}$$
+    $$C_2 = \frac{\epsilon_0 A}{d_2} = \frac{(8.85 \times 10^{-12})(5.0 \times 10^{-5})}{0.4 \times 10^{-3}} \approx 1.1063\text{ pF}$$
+    $$\Delta C = C_2 - C_1 = 1.1063\text{ pF} - 0.3688\text{ pF} = \mathbf{0.737\text{ pF}} = \mathbf{7.37 \times 10^{-13}\text{ F}}$$
 
 13. **Capacitor con papel encerado ($\kappa = 2.5$, rigidez $15 \times 10^6\text{ V/m}$) de espesor $d = 0.1\text{ mm} = 1.0 \times 10^{-4}\text{ m}$. Factor de seguridad del 50%. Voltaje máximo seguro.**
     * Rigidez segura: $E_{\text{seguro}} = 0.50 \times (15.0 \times 10^6\text{ V/m}) = 7.50 \times 10^6\text{ V/m}$.
@@ -362,12 +362,11 @@
    $$C_{\text{eq}} = C_1 + C_2 + C_3 = 2.0\ \mu\text{F} + 4.0\ \mu\text{F} + 6.0\ \mu\text{F} = \mathbf{12.0\ \mu\text{F}}$$
 
 8. **Para el circuito en serie del problema 6, determine la carga y el voltaje en el capacitor de $2.0\ \mu\text{F}$.**
-   * Carga total del circuito en serie:
-     $$Q_{\text{total}} = C_{\text{eq}} \cdot \Delta V = \left( \frac{12}{11}\ \mu\text{F} \right) (24\text{ V}) = \frac{288}{11}\ \mu\text{C} \approx \mathbf{26.18\ \mu\text{C}}$$
-   * Como están en serie, todos tienen la misma carga:
-     $$Q_1 = Q_{\text{total}} \approx \mathbf{26.18\ \mu\text{C}}$$
+   * Carga del circuito en serie:
+     * Usando $C_{\text{eq}} = 1.09\ \mu\text{F}$ (del ejercicio 6): $Q = (1.09\ \mu\text{F})(24\text{ V}) = \mathbf{26.16\ \mu\text{C}}$.
+     * (O con fracción exacta $12/11\ \mu\text{F}$): $Q = \frac{288}{11}\ \mu\text{C} \approx \mathbf{26.18\ \mu\text{C}}$.
    * Voltaje en el capacitor de $2.0\ \mu\text{F}$:
-     $$V_1 = \frac{Q_1}{C_1} = \frac{288/11\ \mu\text{C}}{2.0\ \mu\text{F}} = \frac{144}{11}\text{ V} \approx \mathbf{13.09\text{ V}}$$
+     $$V_1 = \frac{26.16\ \mu\text{C}}{2.0\ \mu\text{F}} = \mathbf{13.08\text{ V}} \quad \left(\text{o con fracción exacta } \frac{144}{11}\text{ V} \approx 13.09\text{ V}\right)$$
 
 9. **$C_1 = 4.0\ \mu\text{F}$ cargado a $100\text{ V}$ se desconecta y se conecta en paralelo con $C_2 = 6.0\ \mu\text{F}$ descargado. Calcule el voltaje final de equilibrio.**
    * Carga inicial conservada:
@@ -493,8 +492,8 @@
       $$R_{\text{caliente}} = \frac{V^2}{P} = \frac{(120)^2}{60} = \frac{14,400}{60} = 240\ \Omega$$
     * Relación con temperatura:
       $$R_{\text{caliente}} = R_0 [1 + \alpha (T - T_0)] \implies \frac{240}{15} = 16 = 1 + (4.5 \times 10^{-3})(T - 20)$$
-      $$15 = (4.5 \times 10^{-3})(T - 20) \implies T - 20 = \frac{15}{0.0045} = 3333.3^\circ\text{C}$$
-      $$T = 3333.3 + 20 \approx \mathbf{3353^\circ\text{C}} \approx \mathbf{3.35 \times 10^3\ ^\circ\text{C}}$$
+      $$15 = (4.5 \times 10^{-3})(T_f - 20) \implies T_f - 20 = \frac{15}{0.0045} = 3333.33^\circ\text{C}$$
+      $$T_f = 3333.33 + 20 = \mathbf{3353.33^\circ\text{C}}$$
 
 14. **Muestra biológica cilíndrica de longitud $\ell = 1.5\text{ cm} = 0.015\text{ m}$ y radio $r = 4.0\text{ mm} = 0.004\text{ m}$. Resistencia medida $R = 120\ \Omega$. Determine la resistividad $\rho$.**
     * Área: $A = \pi r^2 = \pi (0.004)^2 = 1.6\pi \times 10^{-5}\text{ m}^2 \approx 5.0265 \times 10^{-5}\text{ m}^2$.
@@ -612,8 +611,7 @@
     * **Cambio porcentual**:
       $$\% \Delta R = \left( \frac{R_{\text{eq2}} - R_{\text{eq1}}}{R_{\text{eq1}}} \right) \times 100\% = \left( \frac{\frac{2}{3} - \frac{2}{7}}{\frac{2}{7}} \right) \times 100\%$$
       $$\frac{2}{3} - \frac{2}{7} = \frac{14 - 6}{21} = \frac{8}{21}$$
-      $$\% \Delta R = \left( \frac{8/21}{2/7} \right) \times 100\% = \left( \frac{8 \times 7}{21 \times 2} \right) \times 100\% = \frac{4}{3} \times 100\% = \mathbf{+133.33\%}$$
-    * **Conclusión**: La resistencia equivalente aumenta en un **$+133.33\%$** (se multiplica por un factor de $7/3 \approx 2.33$).
+    * **Conclusión**: **+133.33% de incremento en la resistencia equivalente** (pasa de $0.2857\ \Omega$ a $0.6667\ \Omega$).
 
 ---
 *Fin del Solucionario Oficial.*

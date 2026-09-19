@@ -54,8 +54,8 @@ window.PROBLEMS_DATA = [
     id: "s7_8", semana: 7, semanaTitle: "Potencial Eléctrico", categoria: "Desarrollo Matemático", numero: 8,
     pregunta: "Datos: Un anillo de radio $R = 0.5\\text{ m}$ tiene una carga total $Q = +12\\ \\mu\\text{C}$ distribuida uniformemente. Deduzca y calcule el potencial en un punto sobre el eje del anillo a una distancia $x = 1.2\\text{ m}$ de su centro.",
     formula: "V = k_e \\int \\frac{dq}{r} = \\frac{k_e Q}{\\sqrt{R^2 + x^2}}",
-    desarrollo: "<strong>Deducción:</strong> Todo elemento diferencial de carga $dq$ del anillo se encuentra a la misma distancia $r = \\sqrt{R^2 + x^2}$ del punto axial $P$. Al integrar: $V = k_e \\int \\frac{dq}{\\sqrt{R^2 + x^2}} = \\frac{k_e}{\\sqrt{R^2 + x^2}} \\int dq = \\frac{k_e Q}{\\sqrt{R^2 + x^2}}$.<br><br><strong>Cálculo numérico:</strong><br>&bull; Distancia: $r = \\sqrt{0.5^2 + 1.2^2} = \\sqrt{0.25 + 1.44} = \\sqrt{1.69} = 1.30\\text{ m}$<br>&bull; Potencial: $V = \\frac{(8.988 \\times 10^9)(12.0 \\times 10^{-6})}{1.30} = \\frac{107,856}{1.30} \\approx 82,966\\text{ V}$.",
-    resultado: "$82.97\\text{ kV} \\ (82,966\\text{ V})$"
+    desarrollo: "<strong>Deducción:</strong> Todo elemento diferencial de carga $dq$ del anillo se encuentra a la misma distancia $r = \\sqrt{R^2 + x^2}$ del punto axial $P$. Al integrar: $V = k_e \\int \\frac{dq}{\\sqrt{R^2 + x^2}} = \\frac{k_e}{\\sqrt{R^2 + x^2}} \\int dq = \\frac{k_e Q}{\\sqrt{R^2 + x^2}}$.<br><br><strong>Cálculo numérico:</strong><br>&bull; Distancia: $r = \\sqrt{0.5^2 + 1.2^2} = \\sqrt{0.25 + 1.44} = \\sqrt{1.69} = 1.30\\text{ m}$<br>&bull; Potencial (con $k_e = 8.99 \\times 10^9\\text{ N}\\cdot\\text{m}^2/\\text{C}^2$):<br>$$V = \\frac{(8.99 \\times 10^9)(12.0 \\times 10^{-6})}{1.30} = \\frac{107,880}{1.30} = 82,984.6\\text{ V}$$",
+    resultado: "$V = 82,984.6\\text{ V} \\ (82.98\\text{ kV})$"
   },
   {
     id: "s7_9", semana: 7, semanaTitle: "Potencial Eléctrico", categoria: "Desarrollo Matemático", numero: 9,
@@ -68,36 +68,36 @@ window.PROBLEMS_DATA = [
     id: "s7_10", semana: 7, semanaTitle: "Potencial Eléctrico", categoria: "Desarrollo Matemático", numero: 10,
     pregunta: "Datos: Una varilla delgada de longitud $L = 2.0\\text{ m}$ tiene una densidad de carga lineal uniforme $\\lambda = +4.0\\ \\mu\\text{C/m}$. Calcule el potencial en un punto a una distancia $d = 0.5\\text{ m}$ de uno de sus extremos, a lo largo de su eje.",
     formula: "V = k_e \\int_d^{d+L} \\frac{\\lambda dx}{x} = k_e \\lambda \\ln\\left(\\frac{d+L}{d}\\right)",
-    desarrollo: "Colocando el punto de observación en el origen $x = 0$, la varilla se ubica desde $x = d = 0.5\\text{ m}$ hasta $x = d + L = 2.5\\text{ m}$. Cada segmento diferencial $dx$ aporta $dq = \\lambda dx$ a distancia $x$.<br>$$V = k_e \\lambda [\\ln x]_d^{d+L} = k_e \\lambda \\ln\\left( \\frac{0.5 + 2.0}{0.5} \\right) = k_e \\lambda \\ln(5.0)$$<br>$$V = (8.988 \\times 10^9)(4.0 \\times 10^{-6}) \\ln(5.0) = 35,952 \\times 1.60944 \\approx 57,862\\text{ V}$$",
-    resultado: "$57.86\\text{ kV} \\ (57,862\\text{ V})$"
+    desarrollo: "Colocando el punto de observación en el origen $x = 0$, la varilla se ubica desde $x = d = 0.5\\text{ m}$ hasta $x = d + L = 2.5\\text{ m}$. Cada segmento diferencial $dx$ aporta $dq = \\lambda dx$ a distancia $x$.<br>$$V = k_e \\lambda [\\ln x]_d^{d+L} = k_e \\lambda \\ln\\left( \\frac{0.5 + 2.0}{0.5} \\right) = k_e \\lambda \\ln(5.0)$$<br>Con $k_e = 8.99 \\times 10^9\\text{ N}\\cdot\\text{m}^2/\\text{C}^2$:<br>$$V = (8.99 \\times 10^9)(4.0 \\times 10^{-6}) \\ln(5.0) = 35,960 \\times 1.609438 = 57,875.4\\text{ V}$$",
+    resultado: "$V = 57,875.4\\text{ V} \\ (57.88\\text{ kV})$"
   },
   {
     id: "s7_11", semana: 7, semanaTitle: "Potencial Eléctrico", categoria: "Aplicación", numero: 11,
     pregunta: "Datos: Un acelerador de partículas somete a un protón ($q = 1.6 \\times 10^{-19}\\text{ C}, m = 1.67 \\times 10^{-27}\\text{ kg}$) desde el reposo a una diferencia de potencial de $15,000\\text{ V}$. Calcule la velocidad final del protón.",
     formula: "\\frac{1}{2} m v^2 = q \\Delta V \\implies v = \\sqrt{\\frac{2 q \\Delta V}{m}}",
-    desarrollo: "Por el teorema de conservación de la energía mecánica en un sistema conservativo aislado:<br>$$v = \\sqrt{\\frac{2(1.60 \\times 10^{-19}\\text{ C})(15,000\\text{ V})}{1.67 \\times 10^{-27}\\text{ kg}}} = \\sqrt{\\frac{4.80 \\times 10^{-15}}{1.67 \\times 10^{-27}}} = \\sqrt{2.874 \\times 10^{12}} \\approx 1.70 \\times 10^6\\text{ m/s}$$",
-    resultado: "$1.70 \\times 10^6\\text{ m/s} \\ (1,695\\text{ km/s})$"
+    desarrollo: "Por el teorema de conservación de la energía mecánica en un sistema conservativo aislado:<br>$$v = \\sqrt{\\frac{2(1.60 \\times 10^{-19}\\text{ C})(15,000\\text{ V})}{1.67 \\times 10^{-27}\\text{ kg}}} = \\sqrt{\\frac{4.80 \\times 10^{-15}}{1.67 \\times 10^{-27}}} = \\sqrt{2.874 \\times 10^{12}} = 1.695 \\times 10^6\\text{ m/s} \\approx 1.69 \\times 10^6\\text{ m/s}$$",
+    resultado: "$v = 1.69 \\times 10^6\\text{ m/s} \\ (1,695\\text{ km/s})$"
   },
   {
     id: "s7_12", semana: 7, semanaTitle: "Potencial Eléctrico", categoria: "Aplicación", numero: 12,
     pregunta: "Datos: Una esfera conductora de un generador Van de Graaff tiene un radio $R = 0.15\\text{ m}$ y el aire se ioniza si el campo eléctrico excede $3.0 \\times 10^6\\text{ V/m}$. Calcule el potencial máximo que puede alcanzar la esfera.",
     formula: "V_{\\text{máx}} = E_{\\text{máx}} \\cdot R",
     desarrollo: "En la superficie de una esfera conductora aislada, el campo es $E = \\frac{k_e Q}{R^2}$ y el potencial es $V = \\frac{k_e Q}{R}$. Sustituyendo directamente:<br>$$V_{\\text{máx}} = E_{\\text{máx}} \\cdot R = (3.0 \\times 10^6\\text{ V/m})(0.15\\text{ m}) = 450,000\\text{ V} = 450\\text{ kV}$$",
-    resultado: "$450\\text{ kV} \\ (4.50 \\times 10^5\\text{ V})$"
+    resultado: "$V_{\\text{máx}} = 450,000\\text{ V} \\ (450\\text{ kV})$"
   },
   {
     id: "s7_13", semana: 7, semanaTitle: "Potencial Eléctrico", categoria: "Aplicación", numero: 13,
     pregunta: "Datos: En un tubo de rayos catódicos analógico, dos placas separadas por $2.0\\text{ cm}$ tienen una diferencia de potencial de $400\\text{ V}$. Determine el módulo del campo eléctrico uniforme entre ellas.",
     formula: "E = \\frac{\\Delta V}{d}",
     desarrollo: "Distancia entre placas en metros: $d = 2.0\\text{ cm} = 0.02\\text{ m}$.<br>$$E = \\frac{400\\text{ V}}{0.02\\text{ m}} = 20,000\\text{ V/m} = 2.0 \\times 10^4\\text{ V/m}$$",
-    resultado: "$20,000\\text{ V/m} = 2.0 \\times 10^4\\text{ V/m}$"
+    resultado: "$E = 20,000\\text{ V/m} = 2.0 \\times 10^4\\text{ V/m}$"
   },
   {
     id: "s7_14", semana: 7, semanaTitle: "Potencial Eléctrico", categoria: "Aplicación", numero: 14,
     pregunta: "Datos: Un sistema de blindaje industrial requiere una esfera conductora hueca con radio interno $R_1 = 10\\text{ cm}$ y externo $R_2 = 15\\text{ cm}$. Si se introduce una carga central de $2.0\\ \\mu\\text{C}$, determine el potencial en la superficie exterior.",
     formula: "V(R_2) = \\frac{k_e q}{R_2}",
-    desarrollo: "Por inducción electrostática, la carga central $+q$ induce una carga $-q$ en la pared interior y una carga $+q$ en la superficie exterior. Para todo radio $r \\ge R_2 = 0.15\\text{ m}$, el campo eléctrico es exactamente el de una carga puntual $+q$. Con referencia $V_\\infty = 0$:<br>$$V(R_2) = \\frac{(8.988 \\times 10^9)(2.0 \\times 10^{-6})}{0.15\\text{ m}} = \\frac{17,976}{0.15} \\approx 119,840\\text{ V}$$",
-    resultado: "$120\\text{ kV} \\ (119,840\\text{ V})$"
+    desarrollo: "Por inducción electrostática, la carga central $+q$ induce una carga $-q$ en la pared interior y una carga $+q$ en la superficie exterior. Para todo radio $r \\ge R_2 = 0.15\\text{ m}$, el campo eléctrico es exactamente el de una carga puntual $+q$. Con $k_e = 8.99 \\times 10^9\\text{ N}\\cdot\\text{m}^2/\\text{C}^2$:<br>$$V(R_2) = \\frac{(8.99 \\times 10^9)(2.0 \\times 10^{-6})}{0.15\\text{ m}} = \\frac{17,980}{0.15} = 119,866.7\\text{ V}$$",
+    resultado: "$V = 119,866.7\\text{ V} \\ (119.87\\text{ kV})$"
   },
   {
     id: "s7_15", semana: 7, semanaTitle: "Potencial Eléctrico", categoria: "Aplicación", numero: 15,
@@ -189,8 +189,8 @@ window.PROBLEMS_DATA = [
     id: "s8_12", semana: 8, semanaTitle: "Capacitancia & Dieléctricos", categoria: "Aplicación", numero: 12,
     pregunta: "Datos: El teclado de una computadora utiliza capacitores de placas variables bajo cada tecla. Si el área es $A = 0.5\\text{ cm}^2$ y la separación normal es $d = 1.2\\text{ mm}$, calcule el cambio de capacitancia si la tecla se presiona disminuyendo la separación a $0.4\\text{ mm}$.",
     formula: "C = \\frac{\\epsilon_0 A}{d}, \\quad \\Delta C = C_2 - C_1",
-    desarrollo: "Área: $A = 0.5 \\times 10^{-4}\\text{ m}^2 = 5.0 \\times 10^{-5}\\text{ m}^2$.<br>&bull; Capacitancia inicial: $C_1 = \\frac{(8.854 \\times 10^{-12})(5.0 \\times 10^{-5})}{1.2 \\times 10^{-3}} \\approx 0.369\\text{ pF}$<br>&bull; Capacitancia presionada: $C_2 = \\frac{(8.854 \\times 10^{-12})(5.0 \\times 10^{-5})}{0.4 \\times 10^{-3}} \\approx 1.107\\text{ pF}$<br>&bull; Variación: $\\Delta C = 1.107 - 0.369 = +0.738\\text{ pF}$ (se triplica).",
-    resultado: "$\\Delta C = +0.738\\text{ pF} \\ (7.38 \\times 10^{-13}\\text{ F})$"
+    desarrollo: "Área: $A = 0.5 \\times 10^{-4}\\text{ m}^2 = 5.0 \\times 10^{-5}\\text{ m}^2$.<br>&bull; Capacitancia inicial ($d_1 = 1.2\\text{ mm}$): $C_1 = \\frac{(8.85 \\times 10^{-12})(5.0 \\times 10^{-5})}{1.2 \\times 10^{-3}} \\approx 0.3688\\text{ pF}$<br>&bull; Capacitancia presionada ($d_2 = 0.4\\text{ mm}$): $C_2 = \\frac{(8.85 \\times 10^{-12})(5.0 \\times 10^{-5})}{0.4 \\times 10^{-3}} \\approx 1.1063\\text{ pF}$<br>&bull; Variación: $\\Delta C = C_2 - C_1 = 1.1063 - 0.3688 = 0.7375\\text{ pF} \\approx 0.737\\text{ pF}$.",
+    resultado: "$\\Delta C = 0.737\\text{ pF} \\ (7.37 \\times 10^{-13}\\text{ F})$"
   },
   {
     id: "s8_13", semana: 8, semanaTitle: "Capacitancia & Dieléctricos", categoria: "Aplicación", numero: 13,
@@ -268,8 +268,8 @@ window.PROBLEMS_DATA = [
     id: "s9_8", semana: 9, semanaTitle: "Circuitos de Capacitores", categoria: "Desarrollo Matemático", numero: 8,
     pregunta: "Datos: Para el circuito en serie del problema 6, determine la carga y el voltaje en el capacitor de $2.0\\ \\mu\\text{F}$.",
     formula: "Q = C_{\\text{eq}} \\cdot \\Delta V, \\quad V_1 = \\frac{Q}{C_1}",
-    desarrollo: "Carga común en serie:<br>$$Q = \\left(\\frac{12}{11}\\ \\mu\\text{F}\\right)(24\\text{ V}) = \\frac{288}{11}\\ \\mu\\text{C} \\approx 26.18\\ \\mu\\text{C}$$<br>Voltaje en el capacitor de $2.0\\ \\mu\\text{F}$:<br>$$V_1 = \\frac{288/11\\ \\mu\\text{C}}{2.0\\ \\mu\\text{F}} = \\frac{144}{11}\\text{ V} \\approx 13.09\\text{ V}$$",
-    resultado: "$Q = 26.18\\ \\mu\\text{C} \\ (288/11\\ \\mu\\text{C}), \\quad V = 13.09\\text{ V} \\ (144/11\\text{ V})$"
+    desarrollo: "Carga común en serie (usando $C_{\\text{eq}} = 1.09\\ \\mu\\text{F}$ del problema 6):<br>$$Q = (1.09\\ \\mu\\text{F})(24\\text{ V}) = 26.16\\ \\mu\\text{C}$$<br>Voltaje en el capacitor de $2.0\\ \\mu\\text{F}$:<br>$$V_1 = \\frac{26.16\\ \\mu\\text{C}}{2.0\\ \\mu\\text{F}} = 13.08\\text{ V}$$<br>*(Con fracción exacta $12/11\\ \\mu\\text{F}$: $Q = 26.18\\ \\mu\\text{C}$ y $V_1 = 13.09\\text{ V}$)*.",
+    resultado: "$Q = 26.16\\ \\mu\\text{C}, \\quad V_1 = 13.08\\text{ V} \\quad (\\text{o } 26.18\\ \\mu\\text{C}, 13.09\\text{ V})$"
   },
   {
     id: "s9_9", semana: 9, semanaTitle: "Circuitos de Capacitores", categoria: "Desarrollo Matemático", numero: 9,
@@ -410,8 +410,8 @@ window.PROBLEMS_DATA = [
     id: "s10_13", semana: 10, semanaTitle: "Corriente & Resistencia", categoria: "Aplicación", numero: 13,
     pregunta: "Datos: El filamento de wolframio de una bombilla incandescente tradicional tiene una resistencia en frío ($20^\\circ\\text{C}$) de $15\\ \\Omega$. Cuando está encendido y conectado a $120\\text{ V}$, consume una potencia de $60\\text{ W}$. Determine la temperatura de operación del filamento. ($\\alpha_{\\text{wolframio}} = 4.5 \\times 10^{-3}\\ ^\\circ\\text{C}^{-1}$).",
     formula: "R_{\\text{cal}} = \\frac{V^2}{P}, \\quad T = T_0 + \\frac{R/R_0 - 1}{\\alpha}",
-    desarrollo: "Resistencia en régimen caliente:<br>$$R_{\\text{cal}} = \\frac{120^2}{60} = \\frac{14,400}{60} = 240\\ \\Omega$$<br>Razón de variación térmica:<br>$$\\frac{R_{\\text{cal}}}{R_0} = \\frac{240}{15} = 16 = 1 + (4.5 \\times 10^{-3})(T - 20)$$<br>$$15 = 0.0045(T - 20) \\implies T - 20 = \\frac{15}{0.0045} = 3333.3^\\circ\\text{C} \\implies T \\approx 3353^\\circ\\text{C}$$",
-    resultado: "$T = 3353^\\circ\\text{C} \\ (3.35 \\times 10^3\\ ^\\circ\\text{C})$"
+    desarrollo: "Resistencia en régimen caliente:<br>$$R_{\\text{cal}} = \\frac{120^2}{60} = \\frac{14,400}{60} = 240\\ \\Omega$$<br>Razón de variación térmica:<br>$$\\frac{R_{\\text{cal}}}{R_0} = \\frac{240}{15} = 16 = 1 + (4.5 \\times 10^{-3})(T_f - 20)$$<br>$$15 = 0.0045(T_f - 20) \\implies T_f - 20 = \\frac{15}{0.0045} = 3333.33^\\circ\\text{C} \\implies T_f = 3353.33^\\circ\\text{C}$$",
+    resultado: "$T_f = 3353.33^\\circ\\text{C}$"
   },
   {
     id: "s10_14", semana: 10, semanaTitle: "Corriente & Resistencia", categoria: "Aplicación", numero: 14,
@@ -532,6 +532,6 @@ window.PROBLEMS_DATA = [
     pregunta: "Datos: Un instrumento científico de laboratorio de alta precisión utiliza una red de tres derivaciones en paralelo para medir corrientes altas. Las resistencias son de $1.0\\ \\Omega$, $2.0\\ \\Omega$ y $0.5\\ \\Omega$. Si por un error de calibración la resistencia de $0.5\\ \\Omega$ se desconecta accidentalmente del circuito mientras circula una corriente total constante de $3.5\\text{ A}$, determine el cambio porcentual en la resistencia equivalente de la red de medición.",
     formula: "\\% \\Delta R = \\left( \\frac{R_{\\text{eq2}} - R_{\\text{eq1}}}{R_{\\text{eq1}}} \\right) \\times 100\\%",
     desarrollo: "1. <strong>Resistencia equivalente inicial ($R_{\\text{eq1}}$):</strong><br>$$\\frac{1}{R_{\\text{eq1}}} = \\frac{1}{1.0} + \\frac{1}{2.0} + \\frac{1}{0.5} = 1.0 + 0.5 + 2.0 = 3.5 = \\frac{7}{2}\\ \\Omega^{-1} \\implies R_{\\text{eq1}} = \\frac{2}{7}\\ \\Omega \\approx 0.2857\\ \\Omega$$<br>2. <strong>Resistencia equivalente final ($R_{\\text{eq2}}$) sin la rama de $0.5\\ \\Omega$:</strong><br>$$\\frac{1}{R_{\\text{eq2}}} = \\frac{1}{1.0} + \\frac{1}{2.0} = 1.5 = \\frac{3}{2}\\ \\Omega^{-1} \\implies R_{\\text{eq2}} = \\frac{2}{3}\\ \\Omega \\approx 0.6667\\ \\Omega$$<br>3. <strong>Cambio porcentual:</strong><br>$$\\% \\Delta R = \\frac{\\frac{2}{3} - \\frac{2}{7}}{\\frac{2}{7}} \\times 100\\% = \\frac{\\frac{8}{21}}{\\frac{2}{7}} \\times 100\\% = \\left(\\frac{8 \\times 7}{21 \\times 2}\\right) \\times 100\\% = \\frac{4}{3} \\times 100\\% = +133.33\\%$$",
-    resultado: "+133.33% (aumento del 133.33% en $R_{\\text{eq}}$)"
+    resultado: "+133.33% de incremento en la resistencia equivalente (pasa de 0.2857 $\\Omega$ a 0.6667 $\\Omega$)"
   }
 ];
